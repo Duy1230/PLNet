@@ -4,6 +4,11 @@ from . import train_dataset
 from ..config.paths_catalog import DatasetCatalog
 from . import test_dataset
 
+
+def _uses_raw_superpoint_input(cfg):
+    return cfg.MODEL.NAME in {"PointLine", "EnhancedPointLine"}
+
+
 def build_transform(cfg):
     transforms = Compose(
         [ResizeImage(cfg.DATASETS.IMAGE.HEIGHT,
@@ -15,7 +20,7 @@ def build_transform(cfg):
         ]
     )
 
-    if cfg.MODEL.NAME == "PointLine":
+    if _uses_raw_superpoint_input(cfg):
         transforms = Compose(
             [ResizeImage(cfg.DATASETS.IMAGE.HEIGHT,
                         cfg.DATASETS.IMAGE.WIDTH),
@@ -42,7 +47,7 @@ def build_train_dataset(cfg):
                                            cfg.DATASETS.IMAGE.PIXEL_STD,
                                            cfg.DATASETS.IMAGE.TO_255)])
 
-    if cfg.MODEL.NAME == "PointLine":
+    if _uses_raw_superpoint_input(cfg):
         args['transform'] = Compose(
                                     [Resize(cfg.DATASETS.IMAGE.HEIGHT,
                                             cfg.DATASETS.IMAGE.WIDTH,
@@ -71,7 +76,7 @@ def build_test_dataset(cfg):
         ]
     )
 
-    if cfg.MODEL.NAME == "PointLine":
+    if _uses_raw_superpoint_input(cfg):
         transforms = Compose(
             [ResizeImage(cfg.DATASETS.IMAGE.HEIGHT,
                         cfg.DATASETS.IMAGE.WIDTH),

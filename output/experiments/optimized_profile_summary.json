@@ -1,0 +1,11 @@
+{
+  "device": "cuda",
+  "amp": true,
+  "data_ms_avg": 3.6239666709055505,
+  "forward_ms_avg": 295.44556660888094,
+  "backward_ms_avg": 375.4126667045057,
+  "optimizer_ms_avg": 198.28543330853185,
+  "step_ms_avg": 872.767633292824,
+  "peak_mem_mb_max": 1835.11962890625,
+  "loss_avg": 11.09509563446045
+}

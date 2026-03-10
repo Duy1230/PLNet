@@ -1,5 +1,5 @@
-import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class _FeedForward(nn.Module):
@@ -23,9 +23,10 @@ class PointLineCrossAttention(nn.Module):
     Bidirectional cross-attention between point and line feature maps.
     """
 
-    def __init__(self, embed_dim=256, num_heads=4, dropout=0.1):
+    def __init__(self, embed_dim=256, num_heads=4, dropout=0.1, spatial_reduction=1):
         super().__init__()
         self.embed_dim = embed_dim
+        self.spatial_reduction = max(int(spatial_reduction), 1)
 
         self.point_pos = nn.Conv2d(
             embed_dim, embed_dim, kernel_size=3, padding=1, groups=embed_dim, bias=False
@@ -65,6 +66,17 @@ class PointLineCrossAttention(nn.Module):
         b, n, c = seq.shape
         return seq.transpose(1, 2).reshape(b, c, h, w)
 
+    def _reduce_for_attention(self, point_feats, line_feats):
+        if self.spatial_reduction <= 1:
+            return point_feats, line_feats, point_feats.shape[-2], point_feats.shape[-1]
+
+        h, w = point_feats.shape[-2:]
+        reduced_h = max(1, h // self.spatial_reduction)
+        reduced_w = max(1, w // self.spatial_reduction)
+        point_reduced = F.adaptive_avg_pool2d(point_feats, output_size=(reduced_h, reduced_w))
+        line_reduced = F.adaptive_avg_pool2d(line_feats, output_size=(reduced_h, reduced_w))
+        return point_reduced, line_reduced, h, w
+
     def forward(self, point_feats, line_feats):
         if point_feats.shape != line_feats.shape:
             raise ValueError(
@@ -76,6 +88,9 @@ class PointLineCrossAttention(nn.Module):
                 f"Expected channel dimension {self.embed_dim}, got {point_feats.shape[1]}."
             )
 
+        point_feats, line_feats, original_h, original_w = self._reduce_for_attention(
+            point_feats, line_feats
+        )
         point_feats = point_feats + self.point_pos(point_feats)
         line_feats = line_feats + self.line_pos(line_feats)
 
@@ -97,4 +112,17 @@ class PointLineCrossAttention(nn.Module):
 
         refined_point = self._to_map(point_seq, h, w)
         refined_line = self._to_map(line_seq, h, w)
+        if (h, w) != (original_h, original_w):
+            refined_point = F.interpolate(
+                refined_point,
+                size=(original_h, original_w),
+                mode="bilinear",
+                align_corners=False,
+            )
+            refined_line = F.interpolate(
+                refined_line,
+                size=(original_h, original_w),
+                mode="bilinear",
+                align_corners=False,
+            )
         return refined_point, refined_line

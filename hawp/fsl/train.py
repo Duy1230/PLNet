@@ -98,44 +98,79 @@ def train(cfg, model, train_dataset, optimizer, scheduler, loss_reducer, checkpo
     logger = logging.getLogger("hawp.trainer")
     device = cfg.MODEL.DEVICE
     model = model.to(device)
+    use_amp = bool(arguments.get("use_amp", False))
+    grad_accum_steps = max(int(arguments.get("grad_accum_steps", 1)), 1)
+    if hasattr(torch, "amp"):
+        scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    else:
+        scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
     start_training_time = time.time()
     end = time.time()
 
     start_epoch = arguments['epoch']
     num_epochs = arguments['max_epoch'] - start_epoch
     epoch_size = len(train_dataset)
-    
-    epoch = arguments['epoch'] +1
 
     total_iterations = num_epochs*epoch_size
     step = 0
     # experiment.clean()
 
-    writer = SummaryWriter('/media/code/ubuntu_files/tmp/hawp/log/ours')
+    writer = SummaryWriter(os.path.join(cfg.OUTPUT_DIR, "tensorboard"))
+    logger.info(
+        "Training runtime options: amp=%s grad_accum_steps=%d",
+        use_amp,
+        grad_accum_steps,
+    )
     
     for epoch in range(start_epoch+1, start_epoch+num_epochs+1):
         model.train()            
         loss_meters = MetricLogger(" ")
         aux_meters = MetricLogger(" ")
         sys_meters = MetricLogger(" ")
+        optimizer.zero_grad(set_to_none=True)
         # for it, (images, targets, metas) in enumerate(train_dataset):
         for it, (images, annotations) in enumerate(train_dataset):
             data_time = time.time() - end
             images = images.to(device)
             annotations = to_device(annotations,device)
             
-            loss_dict, extra_info = model(images,annotations)
-            total_loss = loss_reducer(loss_dict)
+            if hasattr(torch, "amp"):
+                autocast_context = torch.amp.autocast(device_type="cuda", enabled=use_amp)
+            else:
+                autocast_context = torch.cuda.amp.autocast(enabled=use_amp)
+            with autocast_context:
+                loss_dict, extra_info = model(images,annotations)
+                total_loss = loss_reducer(loss_dict)
+                backward_loss = total_loss / grad_accum_steps
 
             with torch.no_grad():
-                loss_dict_reduced = {k:v.item() for k,v in loss_dict.items()}
-                loss_reduced = total_loss.item()
+                loss_dict_reduced = {
+                    k: (v.detach().item() if isinstance(v, torch.Tensor) else float(v))
+                    for k, v in loss_dict.items()
+                }
+                loss_reduced = (
+                    total_loss.detach().item()
+                    if isinstance(total_loss, torch.Tensor)
+                    else float(total_loss)
+                )
                 loss_meters.update(loss=loss_reduced, **loss_dict_reduced)
                 aux_meters.update(**extra_info)
 
-            optimizer.zero_grad()
-            total_loss.backward()
-            optimizer.step()
+            if use_amp:
+                scaler.scale(backward_loss).backward()
+            else:
+                backward_loss.backward()
+
+            should_step = ((it + 1) % grad_accum_steps == 0) or (
+                (it + 1) == len(train_dataset)
+            )
+            if should_step:
+                if use_amp:
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
 
             batch_time = time.time() - end
             end = time.time()
@@ -169,7 +204,11 @@ def train(cfg, model, train_dataset, optimizer, scheduler, loss_reducer, checkpo
                         sys_meters=str(sys_meters),
                         aux_meters=str(aux_meters),
                         lr=optimizer.param_groups[0]["lr"],
-                        memory=torch.cuda.max_memory_allocated() / 1024.0 / 1024.0,
+                        memory=(
+                            torch.cuda.max_memory_allocated() / 1024.0 / 1024.0
+                            if torch.cuda.is_available() and str(device).startswith("cuda")
+                            else 0.0
+                        ),
                         wdir = cfg.OUTPUT_DIR
                     )
                 )
@@ -186,7 +225,7 @@ def train(cfg, model, train_dataset, optimizer, scheduler, loss_reducer, checkpo
 
     logger.info(
         "Total training time: {} ({:.4f} s / epoch)".format(
-            total_time_str, total_training_time / (max_epoch)
+            total_time_str, total_training_time / max(num_epochs, 1)
         )
     )
 
@@ -211,6 +250,12 @@ if __name__ == "__main__":
     
     parser.add_argument('--tf32', default=False, action='store_true', help='toggle on the TF32 of pytorch')
     parser.add_argument('--dtm', default=True, choices=[True, False], help='toggle the deterministic option of CUDNN. This option will affect the replication of experiments')
+    parser.add_argument(
+        '--amp',
+        default=False,
+        action='store_true',
+        help='enable AMP mixed precision training',
+    )
 
     args = parser.parse_args()
     torch.backends.cudnn.allow_tf32 = args.tf32
@@ -263,6 +308,12 @@ if __name__ == "__main__":
     arguments["epoch"] = 0
     max_epoch = cfg.SOLVER.MAX_EPOCH
     arguments["max_epoch"] = max_epoch
+    config_amp = bool(getattr(cfg.MODEL.ENHANCEMENTS, "AMP", False))
+    arguments["use_amp"] = bool(args.amp or config_amp)
+    if arguments["use_amp"] and (not torch.cuda.is_available() or not str(cfg.MODEL.DEVICE).startswith("cuda")):
+        logger.warning("AMP requested but CUDA device is not active. Falling back to FP32.")
+        arguments["use_amp"] = False
+    arguments["grad_accum_steps"] = max(int(getattr(cfg.SOLVER, "GRAD_ACCUM_STEPS", 1)), 1)
 
     checkpointer = DetectronCheckpointer(cfg,
                                          model,
@@ -279,7 +330,3 @@ if __name__ == "__main__":
     
     logger.info('epoch size = {}'.format(len(train_dataset)))
     train(cfg, model, train_dataset, optimizer, scheduler, loss_reducer, checkpointer, arguments)    
-
-                                         
-    
-    import pdb; pdb.set_trace()

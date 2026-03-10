@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.checkpoint import checkpoint
 
 try:
     from torchvision.ops import DeformConv2d
@@ -115,9 +116,11 @@ class DeformableUNet(nn.Module):
         output_channel,
         layer_num=4,  # kept for API compatibility with the original UNet
         use_dcn_bottleneck=True,
+        use_gradient_checkpointing=False,
     ):
         super().__init__()
         _ = layer_num
+        self.use_gradient_checkpointing = bool(use_gradient_checkpointing)
         self.relu = nn.ReLU(inplace=True)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
@@ -181,8 +184,19 @@ class DeformableUNet(nn.Module):
         self.conv1b_up = nn.Conv2d(d0, output_channel, kernel_size=3, stride=1, padding=1)
         self.bn1b_up = nn.BatchNorm2d(output_channel)
 
-    def _act(self, conv, bn, x):
+    def _act_impl(self, conv, bn, x):
         return self.relu(bn(conv(x)))
+
+    def _act(self, conv, bn, x):
+        if self.use_gradient_checkpointing and self.training and x.requires_grad:
+            def forward_fn(inp):
+                return self._act_impl(conv, bn, inp)
+
+            try:
+                return checkpoint(forward_fn, x, use_reentrant=False)
+            except TypeError:
+                return checkpoint(forward_fn, x)
+        return self._act_impl(conv, bn, x)
 
     def forward(self, x):
         x1 = self._act(self.conv1a, self.bn1a, x)

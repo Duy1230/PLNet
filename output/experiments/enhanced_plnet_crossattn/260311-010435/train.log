@@ -1,0 +1,730 @@
+2026-03-11 01:04:35,739 hawp INFO: Namespace(config='configs/enhanced_plnet_crossattn.yaml', logdir='output/experiments', resume=None, clean=False, seed=42, tf32=False, dtm=True, amp=False)
+2026-03-11 01:04:35,739 hawp INFO: Loaded configuration file configs/enhanced_plnet_crossattn.yaml
+2026-03-11 01:04:35,739 hawp INFO: 
+DATALOADER:
+  NUM_WORKERS: 2
+DATASETS:
+  DISTANCE_TH: 0.02
+  IMAGE:
+    HEIGHT: 512
+    PIXEL_MEAN:
+    - 109.73
+    - 103.832
+    - 98.681
+    PIXEL_STD:
+    - 22.275
+    - 22.124
+    - 23.229
+    TO_255: true
+    WIDTH: 512
+  NUM_STATIC_NEGATIVE_LINES: 40
+  NUM_STATIC_POSITIVE_LINES: 300
+  AUGMENTATION: 5
+  TARGET:
+    HEIGHT: 128
+    WIDTH: 128
+  TEST:
+  - wireframe_test
+  TRAIN:
+  - wireframe_train
+  VAL:
+  - wireframe_test
+ENCODER:
+  ANG_TH: 0.0
+  BACKGROUND_WEIGHT: 0.0
+  DIS_TH: 2
+  NUM_STATIC_NEG_LINES: 0
+  NUM_STATIC_POS_LINES: 300
+MODEL:
+  DEVICE: cuda
+  FOCAL_LOSS:
+    ALPHA: -1.0
+    GAMMA: 0.0
+  HEAD_SIZE:
+  - - 3
+  - - 1
+  - - 1
+  - - 2
+  - - 2
+  HGNETS:
+    DEPTH: 4
+    INPLANES: 64
+    NUM_BLOCKS: 2
+    NUM_FEATS: 128
+    NUM_STACKS: 2
+  ENHANCEMENTS:
+    USE_BIFPN: false
+    BIFPN_CHANNELS: 128
+    BIFPN_REPEATS: 2
+    USE_DCN: false
+    DCN_BOTTLENECK_ONLY: true
+    USE_CROSS_ATTENTION: true
+    CROSS_ATTN_HEADS: 4
+    CROSS_ATTN_DIM: 256
+    CROSS_ATTN_DROPOUT: 0.1
+    CROSS_ATTN_SPATIAL_REDUCTION: 4
+    USE_LINE_FIELD: false
+    LINE_FIELD_HIDDEN: 128
+    UNFREEZE_BACKBONE: false
+    GRAD_CHECKPOINT: true
+    AMP: true
+  LOI_POOLING:
+    ACTIVATION: relu
+    DIM_EDGE_FEATURE: 4
+    DIM_FC: 128
+    DIM_JUNCTION_FEATURE: 128
+    LAYER_NORM: false
+    NUM_POINTS: 32
+    TYPE: softmax
+  LOSS_WEIGHTS:
+    loss_aux: 1.0
+    loss_dis: 1.0
+    loss_jloc: 8.0
+    loss_joff: 0.25
+    loss_res: 1.0
+    loss_md: 1.0
+    loss_lineness: 1.0
+    loss_neg: 1.0
+    loss_pos: 1.0
+  NAME: EnhancedPointLine
+  OUT_FEATURE_CHANNELS: 256
+  PARSING_HEAD:
+    DIM_FC: 1024
+    DIM_LOI: 128
+    J2L_THRESHOLD: 10.0
+    JMATCH_THRESHOLD: 1.5
+    JUNCTION_HM_THRESHOLD: 0.008
+    MATCHING_STRATEGY: junction
+    MAX_DISTANCE: 5.0
+    N_DYN_JUNC: 300
+    N_DYN_NEGL: 40
+    N_DYN_OTHR: 0
+    N_DYN_OTHR2: 300
+    N_DYN_POSL: 300
+    N_OUT_JUNC: 250
+    N_OUT_LINE: 2500
+    N_PTS0: 32
+    N_PTS1: 8
+    N_STC_NEGL: 40
+    N_STC_POSL: 300
+    USE_RESIDUAL: 1
+  RESNETS:
+    BASENET: resnet50
+    PRETRAIN: true
+  SCALE: 1.0
+  WEIGHTS: ''
+MODELING_PATH: ihawp-v2
+OUTPUT_DIR: output/ihawp
+SOLVER:
+  AMSGRAD: true
+  BACKBONE_LR_FACTOR: 1.0
+  BASE_LR: 0.0004
+  BIAS_LR_FACTOR: 1
+  CHECKPOINT_PERIOD: 1
+  GAMMA: 0.2
+  IMS_PER_BATCH: 2
+  GRAD_ACCUM_STEPS: 3
+  MAX_EPOCH: 40
+  MOMENTUM: 0.9
+  OPTIMIZER: ADAM
+  STEPS:
+  - 35
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0
+
+2026-03-11 01:04:35,742 hawp INFO: Running with config:
+DATALOADER:
+  NUM_WORKERS: 2
+DATASETS:
+  AUGMENTATION: 5
+  DISTANCE_TH: 0.02
+  IMAGE:
+    HEIGHT: 512
+    PIXEL_MEAN: [109.73, 103.832, 98.681]
+    PIXEL_STD: [22.275, 22.124, 23.229]
+    TO_255: True
+    WIDTH: 512
+  NUM_STATIC_NEGATIVE_LINES: 40
+  NUM_STATIC_POSITIVE_LINES: 300
+  TARGET:
+    HEIGHT: 128
+    WIDTH: 128
+  TEST: ('wireframe_test',)
+  TRAIN: ('wireframe_train',)
+  VAL: ('wireframe_test',)
+ENCODER:
+  ANG_TH: 0.0
+  BACKGROUND_WEIGHT: 0.0
+  DIS_TH: 2
+  NUM_STATIC_NEG_LINES: 0
+  NUM_STATIC_POS_LINES: 300
+MODEL:
+  DEVICE: cuda
+  ENHANCEMENTS:
+    AMP: True
+    BIFPN_CHANNELS: 128
+    BIFPN_REPEATS: 2
+    CROSS_ATTN_DIM: 256
+    CROSS_ATTN_DROPOUT: 0.1
+    CROSS_ATTN_HEADS: 4
+    CROSS_ATTN_SPATIAL_REDUCTION: 4
+    DCN_BOTTLENECK_ONLY: True
+    GRAD_CHECKPOINT: True
+    LINE_FIELD_HIDDEN: 128
+    UNFREEZE_BACKBONE: False
+    USE_BIFPN: False
+    USE_CROSS_ATTENTION: True
+    USE_DCN: False
+    USE_LINE_FIELD: False
+  FOCAL_LOSS:
+    ALPHA: -1.0
+    GAMMA: 0.0
+  HEAD_SIZE: [[3], [1], [1], [2], [2]]
+  HGNETS:
+    DEPTH: 4
+    INPLANES: 64
+    NUM_BLOCKS: 2
+    NUM_FEATS: 128
+    NUM_STACKS: 2
+  LOI_POOLING:
+    ACTIVATION: relu
+    DIM_EDGE_FEATURE: 4
+    DIM_FC: 128
+    DIM_JUNCTION_FEATURE: 128
+    LAYER_NORM: False
+    NUM_POINTS: 32
+    TYPE: softmax
+    USE_INIT_LINES: True
+  LOSS_WEIGHTS:
+    loss_aux: 1.0
+    loss_dis: 1.0
+    loss_jloc: 8.0
+    loss_joff: 0.25
+    loss_lineness: 1.0
+    loss_md: 1.0
+    loss_neg: 1.0
+    loss_pos: 1.0
+    loss_res: 1.0
+  NAME: EnhancedPointLine
+  OUT_FEATURE_CHANNELS: 256
+  PARSING_HEAD:
+    DIM_FC: 1024
+    DIM_LOI: 128
+    J2L_THRESHOLD: 10.0
+    JMATCH_THRESHOLD: 1.5
+    JUNCTION_HM_THRESHOLD: 0.008
+    MATCHING_STRATEGY: junction
+    MAX_DISTANCE: 5.0
+    N_DYN_JUNC: 300
+    N_DYN_NEGL: 40
+    N_DYN_OTHR: 0
+    N_DYN_OTHR2: 300
+    N_DYN_POSL: 300
+    N_OUT_JUNC: 250
+    N_OUT_LINE: 2500
+    N_PTS0: 32
+    N_PTS1: 8
+    N_STC_NEGL: 40
+    N_STC_POSL: 300
+    USE_RESIDUAL: 1
+  RESNETS:
+    BASENET: resnet50
+    PRETRAIN: True
+  SCALE: 1.0
+  USE_HR_JUNCTION: False
+  USE_LINE_HEATMAP: False
+  WEIGHTS: 
+MODELING_PATH: ihawp-v2
+OUTPUT_DIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+SOLVER:
+  AMSGRAD: True
+  BACKBONE_LR_FACTOR: 1.0
+  BASE_LR: 0.0004
+  BIAS_LR_FACTOR: 1
+  CHECKPOINT_PERIOD: 1
+  GAMMA: 0.2
+  GRAD_ACCUM_STEPS: 3
+  IMS_PER_BATCH: 2
+  MAX_EPOCH: 40
+  MOMENTUM: 0.9
+  OPTIMIZER: ADAM
+  STEPS: (35,)
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0
+2026-03-11 01:04:35,742 hawp INFO: Saving config into: output/experiments\enhanced_plnet_crossattn\260311-010435\config.yaml
+2026-03-11 01:04:45,515 hawp INFO: epoch size = 12500
+2026-03-11 01:04:45,625 hawp.trainer INFO: Training runtime options: amp=True grad_accum_steps=3
+2026-03-11 01:05:26,071 hawp.trainer INFO: eta: 234 days, 2:06:31 epoch: 1 iter: 0 lr: 0.000400 max mem: 1761
+RUNTIME: data: 38.2128 (38.2128) time: 40.4505 (40.4505)
+LOSSES: loss: 14.7381 (14.7381) loss_aux: 0.0118 (0.0118) loss_dis: 0.4895 (0.4895) loss_jloc: 1.3575 (1.3575) loss_joff: 0.5120 (0.5120) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.6207 (0.6207) loss_md: 0.7441 (0.7441) loss_neg: 0.6145 (0.6145) loss_pos: 0.7659 (0.7659) loss_res: 0.5039 (0.5039)
+AUXINFO: recall_adjust-05: 0.0000 (0.0000) recall_adjust-10: 0.0061 (0.0061) recall_adjust-15: 0.0061 (0.0061) recall_hafm-05: 0.0596 (0.0596) recall_hafm-10: 0.0981 (0.0981) recall_hafm-15: 0.1506 (0.1506)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:05:42,373 hawp.trainer INFO: eta: 15 days, 15:20:39 epoch: 1 iter: 20 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0034 (1.9460) time: 0.5016 (2.7026)
+LOSSES: loss: 9.2335 (10.1314) loss_aux: 0.0144 (0.0151) loss_dis: 0.4970 (0.5120) loss_jloc: 0.6946 (0.8257) loss_joff: 0.5136 (0.5130) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.6099 (0.5869) loss_md: 0.5723 (0.5748) loss_neg: 0.6169 (0.6419) loss_pos: 0.6470 (0.6737) loss_res: 0.4106 (0.3932)
+AUXINFO: recall_adjust-05: 0.0000 (0.0041) recall_adjust-10: 0.0114 (0.0132) recall_adjust-15: 0.0192 (0.0237) recall_hafm-05: 0.1101 (0.1066) recall_hafm-10: 0.1739 (0.1750) recall_hafm-15: 0.2388 (0.2387)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:05:54,662 hawp.trainer INFO: eta: 9 days, 17:51:45 epoch: 1 iter: 40 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0043 (0.9989) time: 0.5436 (1.6839)
+LOSSES: loss: 3.0830 (6.7590) loss_aux: 0.0356 (0.0263) loss_dis: 0.4780 (0.4957) loss_jloc: 0.0858 (0.4707) loss_joff: 0.5043 (0.5126) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.2427 (0.4295) loss_md: 0.2680 (0.4275) loss_neg: 0.5077 (0.5833) loss_pos: 0.5005 (0.5707) loss_res: 0.2683 (0.3321)
+AUXINFO: recall_adjust-05: 0.0058 (0.0060) recall_adjust-10: 0.0111 (0.0147) recall_adjust-15: 0.0268 (0.0263) recall_hafm-05: 0.0571 (0.0851) recall_hafm-10: 0.1059 (0.1504) recall_hafm-15: 0.1339 (0.2051)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:06:08,018 hawp.trainer INFO: eta: 7 days, 19:35:15 epoch: 1 iter: 60 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0050 (0.6731) time: 0.6766 (1.3508)
+LOSSES: loss: 2.7793 (5.4547) loss_aux: 0.0360 (0.0295) loss_dis: 0.4561 (0.4828) loss_jloc: 0.0682 (0.3389) loss_joff: 0.4915 (0.5060) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0527 (0.3056) loss_md: 0.2616 (0.3730) loss_neg: 0.4844 (0.5844) loss_pos: 0.4579 (0.5361) loss_res: 0.2531 (0.3056)
+AUXINFO: recall_adjust-05: 0.0078 (0.0080) recall_adjust-10: 0.0234 (0.0196) recall_adjust-15: 0.0426 (0.0333) recall_hafm-05: 0.1373 (0.1054) recall_hafm-10: 0.2210 (0.1724) recall_hafm-15: 0.2656 (0.2280)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:06:21,201 hawp.trainer INFO: eta: 6 days, 19:51:50 epoch: 1 iter: 80 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0039 (0.5081) time: 0.5952 (1.1800)
+LOSSES: loss: 2.6361 (4.7527) loss_aux: 0.0417 (0.0324) loss_dis: 0.4380 (0.4716) loss_jloc: 0.0610 (0.2710) loss_joff: 0.4867 (0.5017) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0181 (0.2351) loss_md: 0.2482 (0.3426) loss_neg: 0.4554 (0.5638) loss_pos: 0.4514 (0.5250) loss_res: 0.2383 (0.2891)
+AUXINFO: recall_adjust-05: 0.0070 (0.0083) recall_adjust-10: 0.0196 (0.0216) recall_adjust-15: 0.0408 (0.0370) recall_hafm-05: 0.0557 (0.0979) recall_hafm-10: 0.1083 (0.1635) recall_hafm-15: 0.1595 (0.2189)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:06:33,416 hawp.trainer INFO: eta: 6 days, 4:12:17 epoch: 1 iter: 100 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0046 (0.4083) time: 0.5579 (1.0673)
+LOSSES: loss: 2.4288 (4.3043) loss_aux: 0.0264 (0.0319) loss_dis: 0.4251 (0.4623) loss_jloc: 0.0558 (0.2286) loss_joff: 0.4892 (0.4985) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0350 (0.1963) loss_md: 0.2526 (0.3251) loss_neg: 0.4763 (0.5503) loss_pos: 0.4221 (0.5069) loss_res: 0.2314 (0.2781)
+AUXINFO: recall_adjust-05: 0.0147 (0.0103) recall_adjust-10: 0.0360 (0.0247) recall_adjust-15: 0.0590 (0.0420) recall_hafm-05: 0.1375 (0.1064) recall_hafm-10: 0.2288 (0.1767) recall_hafm-15: 0.2908 (0.2328)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:06:46,126 hawp.trainer INFO: eta: 5 days, 18:17:22 epoch: 1 iter: 120 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0039 (0.3415) time: 0.6001 (0.9959)
+LOSSES: loss: 2.3762 (3.9947) loss_aux: 0.0244 (0.0309) loss_dis: 0.4121 (0.4544) loss_jloc: 0.0579 (0.2006) loss_joff: 0.4813 (0.4961) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0389 (0.1703) loss_md: 0.2507 (0.3130) loss_neg: 0.4625 (0.5355) loss_pos: 0.3805 (0.4917) loss_res: 0.2272 (0.2699)
+AUXINFO: recall_adjust-05: 0.0203 (0.0118) recall_adjust-10: 0.0471 (0.0283) recall_adjust-15: 0.0624 (0.0468) recall_hafm-05: 0.1284 (0.1117) recall_hafm-10: 0.2578 (0.1884) recall_hafm-15: 0.3231 (0.2459)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:06:56,510 hawp.trainer INFO: eta: 5 days, 8:53:42 epoch: 1 iter: 140 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0033 (0.2936) time: 0.4941 (0.9283)
+LOSSES: loss: 2.2878 (3.7697) loss_aux: 0.0268 (0.0306) loss_dis: 0.4142 (0.4489) loss_jloc: 0.0599 (0.1808) loss_joff: 0.4784 (0.4936) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0267 (0.1500) loss_md: 0.2420 (0.3034) loss_neg: 0.3229 (0.5144) loss_pos: 0.4077 (0.4889) loss_res: 0.2258 (0.2640)
+AUXINFO: recall_adjust-05: 0.0195 (0.0129) recall_adjust-10: 0.0422 (0.0309) recall_adjust-15: 0.0685 (0.0503) recall_hafm-05: 0.1212 (0.1130) recall_hafm-10: 0.2050 (0.1908) recall_hafm-15: 0.3014 (0.2527)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:07:08,481 hawp.trainer INFO: eta: 5 days, 3:12:08 epoch: 1 iter: 160 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0037 (0.2577) time: 0.5415 (0.8873)
+LOSSES: loss: 2.1727 (3.5729) loss_aux: 0.0256 (0.0302) loss_dis: 0.4204 (0.4450) loss_jloc: 0.0561 (0.1653) loss_joff: 0.4691 (0.4909) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0307 (0.1355) loss_md: 0.2458 (0.2961) loss_neg: 0.3374 (0.4951) loss_pos: 0.2743 (0.4661) loss_res: 0.2290 (0.2599)
+AUXINFO: recall_adjust-05: 0.0278 (0.0152) recall_adjust-10: 0.0754 (0.0361) recall_adjust-15: 0.0950 (0.0565) recall_hafm-05: 0.1739 (0.1194) recall_hafm-10: 0.2658 (0.2022) recall_hafm-15: 0.3647 (0.2674)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:07:17,635 hawp.trainer INFO: eta: 4 days, 20:36:21 epoch: 1 iter: 180 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0030 (0.2296) time: 0.3920 (0.8399)
+LOSSES: loss: 2.0900 (3.4106) loss_aux: 0.0233 (0.0296) loss_dis: 0.4095 (0.4412) loss_jloc: 0.0537 (0.1532) loss_joff: 0.4688 (0.4884) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0321 (0.1241) loss_md: 0.2420 (0.2902) loss_neg: 0.2856 (0.4734) loss_pos: 0.3008 (0.4477) loss_res: 0.2295 (0.2564)
+AUXINFO: recall_adjust-05: 0.0372 (0.0182) recall_adjust-10: 0.0943 (0.0424) recall_adjust-15: 0.1388 (0.0647) recall_hafm-05: 0.1913 (0.1272) recall_hafm-10: 0.3097 (0.2146) recall_hafm-15: 0.3969 (0.2817)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:07:25,389 hawp.trainer INFO: eta: 4 days, 14:21:18 epoch: 1 iter: 200 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0027 (0.2070) time: 0.3557 (0.7949)
+LOSSES: loss: 2.0098 (3.2774) loss_aux: 0.0271 (0.0297) loss_dis: 0.4018 (0.4375) loss_jloc: 0.0624 (0.1447) loss_joff: 0.4598 (0.4860) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0275 (0.1148) loss_md: 0.2406 (0.2854) loss_neg: 0.2376 (0.4503) loss_pos: 0.2307 (0.4277) loss_res: 0.2238 (0.2533)
+AUXINFO: recall_adjust-05: 0.0258 (0.0196) recall_adjust-10: 0.0548 (0.0447) recall_adjust-15: 0.0905 (0.0674) recall_hafm-05: 0.1561 (0.1314) recall_hafm-10: 0.2916 (0.2227) recall_hafm-15: 0.3735 (0.2918)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:07:32,855 hawp.trainer INFO: eta: 4 days, 9:03:15 epoch: 1 iter: 220 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0027 (0.1885) time: 0.3505 (0.7567)
+LOSSES: loss: 1.8278 (3.1478) loss_aux: 0.0274 (0.0296) loss_dis: 0.4081 (0.4346) loss_jloc: 0.0671 (0.1378) loss_joff: 0.4676 (0.4843) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0336 (0.1073) loss_md: 0.2462 (0.2819) loss_neg: 0.0940 (0.4187) loss_pos: 0.1424 (0.4016) loss_res: 0.2236 (0.2505)
+AUXINFO: recall_adjust-05: 0.0000 (0.0181) recall_adjust-10: 0.0066 (0.0413) recall_adjust-15: 0.0173 (0.0630) recall_hafm-05: 0.1603 (0.1335) recall_hafm-10: 0.2955 (0.2298) recall_hafm-15: 0.3961 (0.3010)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:07:40,615 hawp.trainer INFO: eta: 4 days, 4:48:07 epoch: 1 iter: 240 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0026 (0.1731) time: 0.3549 (0.7261)
+LOSSES: loss: 1.7063 (3.0283) loss_aux: 0.0252 (0.0295) loss_dis: 0.4062 (0.4324) loss_jloc: 0.0613 (0.1314) loss_joff: 0.4623 (0.4823) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0292 (0.1007) loss_md: 0.2388 (0.2785) loss_neg: 0.0846 (0.3913) loss_pos: 0.0839 (0.3760) loss_res: 0.2265 (0.2485)
+AUXINFO: recall_adjust-05: 0.0000 (0.0167) recall_adjust-10: 0.0000 (0.0384) recall_adjust-15: 0.0148 (0.0591) recall_hafm-05: 0.1430 (0.1349) recall_hafm-10: 0.2875 (0.2352) recall_hafm-15: 0.4095 (0.3094)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:07:48,071 hawp.trainer INFO: eta: 4 days, 1:02:23 epoch: 1 iter: 260 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0027 (0.1601) time: 0.3382 (0.6991)
+LOSSES: loss: 2.0401 (2.9632) loss_aux: 0.0248 (0.0294) loss_dis: 0.4068 (0.4306) loss_jloc: 0.0610 (0.1260) loss_joff: 0.4866 (0.4836) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0298 (0.0956) loss_md: 0.2469 (0.2762) loss_neg: 0.3317 (0.3885) loss_pos: 0.2048 (0.3677) loss_res: 0.2247 (0.2467)
+AUXINFO: recall_adjust-05: 0.0034 (0.0157) recall_adjust-10: 0.0147 (0.0368) recall_adjust-15: 0.0346 (0.0575) recall_hafm-05: 0.1778 (0.1382) recall_hafm-10: 0.3201 (0.2425) recall_hafm-15: 0.4324 (0.3204)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:07:55,691 hawp.trainer INFO: eta: 3 days, 21:53:36 epoch: 1 iter: 280 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0027 (0.1489) time: 0.3567 (0.6764)
+LOSSES: loss: 2.6098 (2.9395) loss_aux: 0.0271 (0.0291) loss_dis: 0.4068 (0.4289) loss_jloc: 0.0553 (0.1214) loss_joff: 0.6228 (0.4938) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0291 (0.0908) loss_md: 0.2412 (0.2736) loss_neg: 0.4608 (0.3975) loss_pos: 0.4754 (0.3797) loss_res: 0.2293 (0.2453)
+AUXINFO: recall_adjust-05: 0.0145 (0.0160) recall_adjust-10: 0.0467 (0.0376) recall_adjust-15: 0.0796 (0.0594) recall_hafm-05: 0.1212 (0.1372) recall_hafm-10: 0.2678 (0.2443) recall_hafm-15: 0.3610 (0.3233)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:08:03,362 hawp.trainer INFO: eta: 3 days, 19:11:20 epoch: 1 iter: 300 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0028 (0.1392) time: 0.3620 (0.6570)
+LOSSES: loss: 2.3503 (2.8991) loss_aux: 0.0206 (0.0287) loss_dis: 0.3985 (0.4271) loss_jloc: 0.0562 (0.1172) loss_joff: 0.5992 (0.5008) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0355 (0.0872) loss_md: 0.2360 (0.2711) loss_neg: 0.4077 (0.3990) loss_pos: 0.3221 (0.3796) loss_res: 0.2241 (0.2439)
+AUXINFO: recall_adjust-05: 0.0205 (0.0165) recall_adjust-10: 0.0482 (0.0389) recall_adjust-15: 0.0807 (0.0611) recall_hafm-05: 0.1745 (0.1405) recall_hafm-10: 0.2894 (0.2491) recall_hafm-15: 0.3814 (0.3285)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:08:10,526 hawp.trainer INFO: eta: 3 days, 16:36:05 epoch: 1 iter: 320 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0025 (0.1307) time: 0.3216 (0.6383)
+LOSSES: loss: 2.2744 (2.8626) loss_aux: 0.0292 (0.0287) loss_dis: 0.4054 (0.4258) loss_jloc: 0.0544 (0.1136) loss_joff: 0.5906 (0.5064) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0297 (0.0837) loss_md: 0.2369 (0.2690) loss_neg: 0.3829 (0.3991) loss_pos: 0.3266 (0.3782) loss_res: 0.2255 (0.2429)
+AUXINFO: recall_adjust-05: 0.0183 (0.0169) recall_adjust-10: 0.0578 (0.0400) recall_adjust-15: 0.0913 (0.0631) recall_hafm-05: 0.1590 (0.1417) recall_hafm-10: 0.3057 (0.2522) recall_hafm-15: 0.3953 (0.3326)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:08:19,422 hawp.trainer INFO: eta: 3 days, 15:01:19 epoch: 1 iter: 340 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0029 (0.1232) time: 0.4188 (0.6270)
+LOSSES: loss: 2.4706 (2.8355) loss_aux: 0.0215 (0.0284) loss_dis: 0.4003 (0.4245) loss_jloc: 0.0655 (0.1106) loss_joff: 0.5823 (0.5109) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0426 (0.0814) loss_md: 0.2373 (0.2672) loss_neg: 0.4206 (0.4012) loss_pos: 0.3250 (0.3790) loss_res: 0.2202 (0.2416)
+AUXINFO: recall_adjust-05: 0.0506 (0.0190) recall_adjust-10: 0.1083 (0.0439) recall_adjust-15: 0.1448 (0.0678) recall_hafm-05: 0.2427 (0.1472) recall_hafm-10: 0.3935 (0.2598) recall_hafm-15: 0.4882 (0.3416)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:08:31,578 hawp.trainer INFO: eta: 3 days, 14:52:16 epoch: 1 iter: 360 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0041 (0.1166) time: 0.5561 (0.6259)
+LOSSES: loss: 2.3058 (2.8040) loss_aux: 0.0286 (0.0284) loss_dis: 0.3858 (0.4225) loss_jloc: 0.0632 (0.1078) loss_joff: 0.5785 (0.5146) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0383 (0.0790) loss_md: 0.2355 (0.2655) loss_neg: 0.3806 (0.4006) loss_pos: 0.3136 (0.3765) loss_res: 0.2164 (0.2402)
+AUXINFO: recall_adjust-05: 0.0480 (0.0207) recall_adjust-10: 0.1140 (0.0476) recall_adjust-15: 0.1536 (0.0723) recall_hafm-05: 0.2196 (0.1514) recall_hafm-10: 0.4069 (0.2678) recall_hafm-15: 0.5060 (0.3516)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:08:43,782 hawp.trainer INFO: eta: 3 days, 14:45:11 epoch: 1 iter: 380 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0037 (0.1107) time: 0.5470 (0.6251)
+LOSSES: loss: 2.2676 (2.7732) loss_aux: 0.0260 (0.0283) loss_dis: 0.4015 (0.4213) loss_jloc: 0.0557 (0.1051) loss_joff: 0.5502 (0.5163) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0389 (0.0769) loss_md: 0.2363 (0.2640) loss_neg: 0.3708 (0.3993) loss_pos: 0.3190 (0.3747) loss_res: 0.2223 (0.2392)
+AUXINFO: recall_adjust-05: 0.0641 (0.0233) recall_adjust-10: 0.1340 (0.0524) recall_adjust-15: 0.1749 (0.0783) recall_hafm-05: 0.2417 (0.1563) recall_hafm-10: 0.4178 (0.2758) recall_hafm-15: 0.5420 (0.3611)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:08:55,704 hawp.trainer INFO: eta: 3 days, 14:32:56 epoch: 1 iter: 400 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0037 (0.1054) time: 0.5511 (0.6237)
+LOSSES: loss: 2.1150 (2.7409) loss_aux: 0.0189 (0.0279) loss_dis: 0.3925 (0.4200) loss_jloc: 0.0503 (0.1024) loss_joff: 0.4800 (0.5148) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0388 (0.0751) loss_md: 0.2348 (0.2625) loss_neg: 0.3454 (0.3972) loss_pos: 0.2920 (0.3718) loss_res: 0.2165 (0.2383)
+AUXINFO: recall_adjust-05: 0.0617 (0.0255) recall_adjust-10: 0.1267 (0.0562) recall_adjust-15: 0.1732 (0.0830) recall_hafm-05: 0.2239 (0.1604) recall_hafm-10: 0.4019 (0.2825) recall_hafm-15: 0.5492 (0.3699)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:09:08,642 hawp.trainer INFO: eta: 3 days, 14:41:55 epoch: 1 iter: 420 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0038 (0.1005) time: 0.5888 (0.6248)
+LOSSES: loss: 2.1433 (2.7160) loss_aux: 0.0280 (0.0279) loss_dis: 0.3974 (0.4191) loss_jloc: 0.0587 (0.1004) loss_joff: 0.4540 (0.5121) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0289 (0.0731) loss_md: 0.2348 (0.2611) loss_neg: 0.3421 (0.3952) loss_pos: 0.3334 (0.3712) loss_res: 0.2166 (0.2375)
+AUXINFO: recall_adjust-05: 0.0649 (0.0282) recall_adjust-10: 0.1440 (0.0609) recall_adjust-15: 0.1858 (0.0882) recall_hafm-05: 0.1935 (0.1631) recall_hafm-10: 0.3605 (0.2873) recall_hafm-15: 0.4661 (0.3758)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:09:18,474 hawp.trainer INFO: eta: 3 days, 13:51:26 epoch: 1 iter: 440 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0034 (0.0962) time: 0.4572 (0.6187)
+LOSSES: loss: 2.0230 (2.6865) loss_aux: 0.0211 (0.0277) loss_dis: 0.3875 (0.4177) loss_jloc: 0.0503 (0.0983) loss_joff: 0.4530 (0.5096) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0411 (0.0718) loss_md: 0.2366 (0.2600) loss_neg: 0.2945 (0.3913) loss_pos: 0.2706 (0.3677) loss_res: 0.2156 (0.2365)
+AUXINFO: recall_adjust-05: 0.0896 (0.0310) recall_adjust-10: 0.1631 (0.0654) recall_adjust-15: 0.2137 (0.0937) recall_hafm-05: 0.2415 (0.1669) recall_hafm-10: 0.4252 (0.2941) recall_hafm-15: 0.5341 (0.3835)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:09:30,820 hawp.trainer INFO: eta: 3 days, 13:50:42 epoch: 1 iter: 460 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0040 (0.0922) time: 0.5479 (0.6187)
+LOSSES: loss: 1.9763 (2.6562) loss_aux: 0.0265 (0.0277) loss_dis: 0.3846 (0.4163) loss_jloc: 0.0543 (0.0965) loss_joff: 0.4447 (0.5069) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0411 (0.0704) loss_md: 0.2316 (0.2588) loss_neg: 0.2701 (0.3865) loss_pos: 0.2358 (0.3621) loss_res: 0.2127 (0.2355)
+AUXINFO: recall_adjust-05: 0.0954 (0.0339) recall_adjust-10: 0.1732 (0.0702) recall_adjust-15: 0.2341 (0.1000) recall_hafm-05: 0.2557 (0.1713) recall_hafm-10: 0.4167 (0.3005) recall_hafm-15: 0.5615 (0.3913)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:09:43,588 hawp.trainer INFO: eta: 3 days, 13:57:19 epoch: 1 iter: 480 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0041 (0.0885) time: 0.6129 (0.6195)
+LOSSES: loss: 2.0001 (2.6294) loss_aux: 0.0208 (0.0274) loss_dis: 0.3865 (0.4151) loss_jloc: 0.0590 (0.0949) loss_joff: 0.4487 (0.5045) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0403 (0.0692) loss_md: 0.2318 (0.2576) loss_neg: 0.2638 (0.3819) loss_pos: 0.2310 (0.3582) loss_res: 0.2164 (0.2347)
+AUXINFO: recall_adjust-05: 0.1007 (0.0367) recall_adjust-10: 0.1913 (0.0754) recall_adjust-15: 0.2559 (0.1064) recall_hafm-05: 0.2452 (0.1746) recall_hafm-10: 0.4378 (0.3066) recall_hafm-15: 0.5880 (0.3996)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:09:54,861 hawp.trainer INFO: eta: 3 days, 13:38:35 epoch: 1 iter: 500 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0040 (0.0852) time: 0.5067 (0.6172)
+LOSSES: loss: 1.9407 (2.6043) loss_aux: 0.0252 (0.0274) loss_dis: 0.3880 (0.4141) loss_jloc: 0.0541 (0.0934) loss_joff: 0.4496 (0.5022) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0371 (0.0681) loss_md: 0.2325 (0.2566) loss_neg: 0.2475 (0.3774) loss_pos: 0.1888 (0.3538) loss_res: 0.2158 (0.2340)
+AUXINFO: recall_adjust-05: 0.1045 (0.0394) recall_adjust-10: 0.1941 (0.0803) recall_adjust-15: 0.2653 (0.1128) recall_hafm-05: 0.2748 (0.1785) recall_hafm-10: 0.4839 (0.3139) recall_hafm-15: 0.6116 (0.4082)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:10:07,147 hawp.trainer INFO: eta: 3 days, 13:37:26 epoch: 1 iter: 520 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0034 (0.0821) time: 0.5629 (0.6171)
+LOSSES: loss: 1.9962 (2.5807) loss_aux: 0.0233 (0.0273) loss_dis: 0.3906 (0.4133) loss_jloc: 0.0549 (0.0920) loss_joff: 0.4542 (0.5002) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0416 (0.0671) loss_md: 0.2363 (0.2559) loss_neg: 0.2106 (0.3726) loss_pos: 0.2324 (0.3499) loss_res: 0.2168 (0.2334)
+AUXINFO: recall_adjust-05: 0.0796 (0.0411) recall_adjust-10: 0.1634 (0.0837) recall_adjust-15: 0.2413 (0.1176) recall_hafm-05: 0.2611 (0.1817) recall_hafm-10: 0.4676 (0.3195) recall_hafm-15: 0.6001 (0.4153)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:10:16,719 hawp.trainer INFO: eta: 3 days, 12:54:36 epoch: 1 iter: 540 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0031 (0.0792) time: 0.4785 (0.6120)
+LOSSES: loss: 1.8594 (2.5551) loss_aux: 0.0207 (0.0271) loss_dis: 0.3977 (0.4128) loss_jloc: 0.0522 (0.0908) loss_joff: 0.4652 (0.4990) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0299 (0.0658) loss_md: 0.2350 (0.2551) loss_neg: 0.1672 (0.3657) loss_pos: 0.1881 (0.3447) loss_res: 0.2226 (0.2330)
+AUXINFO: recall_adjust-05: 0.0247 (0.0407) recall_adjust-10: 0.0729 (0.0832) recall_adjust-15: 0.1256 (0.1178) recall_hafm-05: 0.1765 (0.1815) recall_hafm-10: 0.3695 (0.3213) recall_hafm-15: 0.5176 (0.4193)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:10:26,878 hawp.trainer INFO: eta: 3 days, 12:23:30 epoch: 1 iter: 560 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0028 (0.0765) time: 0.4744 (0.6083)
+LOSSES: loss: 2.0645 (2.5382) loss_aux: 0.0233 (0.0270) loss_dis: 0.4032 (0.4126) loss_jloc: 0.0532 (0.0897) loss_joff: 0.4950 (0.4990) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0286 (0.0645) loss_md: 0.2329 (0.2545) loss_neg: 0.2471 (0.3628) loss_pos: 0.2519 (0.3417) loss_res: 0.2223 (0.2327)
+AUXINFO: recall_adjust-05: 0.0137 (0.0398) recall_adjust-10: 0.0507 (0.0821) recall_adjust-15: 0.0929 (0.1170) recall_hafm-05: 0.1839 (0.1817) recall_hafm-10: 0.3889 (0.3233) recall_hafm-15: 0.4809 (0.4223)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:10:39,525 hawp.trainer INFO: eta: 3 days, 12:30:11 epoch: 1 iter: 580 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0039 (0.0740) time: 0.6034 (0.6091)
+LOSSES: loss: 2.2106 (2.5272) loss_aux: 0.0242 (0.0270) loss_dis: 0.4117 (0.4126) loss_jloc: 0.0600 (0.0887) loss_joff: 0.4786 (0.4983) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0286 (0.0634) loss_md: 0.2443 (0.2541) loss_neg: 0.3414 (0.3623) loss_pos: 0.3326 (0.3411) loss_res: 0.2259 (0.2325)
+AUXINFO: recall_adjust-05: 0.0192 (0.0391) recall_adjust-10: 0.0502 (0.0812) recall_adjust-15: 0.0932 (0.1163) recall_hafm-05: 0.1644 (0.1810) recall_hafm-10: 0.3076 (0.3228) recall_hafm-15: 0.4167 (0.4216)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:10:51,665 hawp.trainer INFO: eta: 3 days, 12:29:24 epoch: 1 iter: 600 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0036 (0.0717) time: 0.5356 (0.6091)
+LOSSES: loss: 1.9490 (2.5057) loss_aux: 0.0234 (0.0270) loss_dis: 0.4055 (0.4123) loss_jloc: 0.0584 (0.0878) loss_joff: 0.4840 (0.4977) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0262 (0.0622) loss_md: 0.2364 (0.2535) loss_neg: 0.1420 (0.3563) loss_pos: 0.1363 (0.3356) loss_res: 0.2206 (0.2322)
+AUXINFO: recall_adjust-05: 0.0000 (0.0379) recall_adjust-10: 0.0036 (0.0788) recall_adjust-15: 0.0198 (0.1131) recall_hafm-05: 0.1296 (0.1796) recall_hafm-10: 0.2347 (0.3202) recall_hafm-15: 0.3104 (0.4182)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:03,805 hawp.trainer INFO: eta: 3 days, 12:28:38 epoch: 1 iter: 620 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0045 (0.0695) time: 0.5576 (0.6090)
+LOSSES: loss: 2.2343 (2.5009) loss_aux: 0.0242 (0.0269) loss_dis: 0.4011 (0.4120) loss_jloc: 0.0567 (0.0869) loss_joff: 0.4878 (0.4975) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0295 (0.0612) loss_md: 0.2409 (0.2532) loss_neg: 0.3409 (0.3623) loss_pos: 0.1307 (0.3335) loss_res: 0.2225 (0.2318)
+AUXINFO: recall_adjust-05: 0.0045 (0.0369) recall_adjust-10: 0.0143 (0.0771) recall_adjust-15: 0.0317 (0.1108) recall_hafm-05: 0.1179 (0.1780) recall_hafm-10: 0.2415 (0.3178) recall_hafm-15: 0.3363 (0.4156)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:14,685 hawp.trainer INFO: eta: 3 days, 12:11:34 epoch: 1 iter: 640 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0032 (0.0674) time: 0.5019 (0.6070)
+LOSSES: loss: 2.7296 (2.5108) loss_aux: 0.0260 (0.0269) loss_dis: 0.4057 (0.4119) loss_jloc: 0.0536 (0.0859) loss_joff: 0.5203 (0.4982) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0303 (0.0603) loss_md: 0.2419 (0.2528) loss_neg: 0.5717 (0.3725) loss_pos: 0.6464 (0.3427) loss_res: 0.2249 (0.2316)
+AUXINFO: recall_adjust-05: 0.0289 (0.0369) recall_adjust-10: 0.0716 (0.0771) recall_adjust-15: 0.1159 (0.1111) recall_hafm-05: 0.1355 (0.1772) recall_hafm-10: 0.2829 (0.3167) recall_hafm-15: 0.3475 (0.4140)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:25,173 hawp.trainer INFO: eta: 3 days, 11:50:35 epoch: 1 iter: 660 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0031 (0.0655) time: 0.4745 (0.6045)
+LOSSES: loss: 2.3419 (2.5061) loss_aux: 0.0235 (0.0268) loss_dis: 0.3978 (0.4116) loss_jloc: 0.0580 (0.0850) loss_joff: 0.4833 (0.4978) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0362 (0.0596) loss_md: 0.2311 (0.2523) loss_neg: 0.3784 (0.3744) loss_pos: 0.4517 (0.3453) loss_res: 0.2181 (0.2313)
+AUXINFO: recall_adjust-05: 0.0238 (0.0364) recall_adjust-10: 0.0539 (0.0766) recall_adjust-15: 0.0987 (0.1107) recall_hafm-05: 0.1864 (0.1778) recall_hafm-10: 0.3310 (0.3176) recall_hafm-15: 0.4485 (0.4150)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:31,914 hawp.trainer INFO: eta: 3 days, 10:45:01 epoch: 1 iter: 680 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0024 (0.0636) time: 0.3004 (0.5966)
+LOSSES: loss: 2.1636 (2.4972) loss_aux: 0.0213 (0.0268) loss_dis: 0.3987 (0.4111) loss_jloc: 0.0530 (0.0842) loss_joff: 0.4771 (0.4973) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0358 (0.0589) loss_md: 0.2316 (0.2517) loss_neg: 0.3868 (0.3751) loss_pos: 0.3118 (0.3450) loss_res: 0.2190 (0.2309)
+AUXINFO: recall_adjust-05: 0.0371 (0.0367) recall_adjust-10: 0.0771 (0.0769) recall_adjust-15: 0.1235 (0.1115) recall_hafm-05: 0.1877 (0.1783) recall_hafm-10: 0.3393 (0.3189) recall_hafm-15: 0.4641 (0.4168)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:38,245 hawp.trainer INFO: eta: 3 days, 9:38:19 epoch: 1 iter: 700 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0023 (0.0619) time: 0.2935 (0.5886)
+LOSSES: loss: 2.2464 (2.4916) loss_aux: 0.0230 (0.0268) loss_dis: 0.3983 (0.4107) loss_jloc: 0.0576 (0.0836) loss_joff: 0.4830 (0.4968) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0362 (0.0583) loss_md: 0.2380 (0.2514) loss_neg: 0.3557 (0.3751) loss_pos: 0.3410 (0.3455) loss_res: 0.2189 (0.2306)
+AUXINFO: recall_adjust-05: 0.0539 (0.0372) recall_adjust-10: 0.1197 (0.0781) recall_adjust-15: 0.1720 (0.1134) recall_hafm-05: 0.2286 (0.1799) recall_hafm-10: 0.4502 (0.3219) recall_hafm-15: 0.5671 (0.4204)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:44,663 hawp.trainer INFO: eta: 3 days, 8:36:20 epoch: 1 iter: 720 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0024 (0.0603) time: 0.2962 (0.5812)
+LOSSES: loss: 2.1199 (2.4816) loss_aux: 0.0231 (0.0267) loss_dis: 0.3931 (0.4103) loss_jloc: 0.0581 (0.0829) loss_joff: 0.4978 (0.4967) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0360 (0.0578) loss_md: 0.2336 (0.2509) loss_neg: 0.3227 (0.3741) loss_pos: 0.2671 (0.3436) loss_res: 0.2200 (0.2303)
+AUXINFO: recall_adjust-05: 0.0508 (0.0376) recall_adjust-10: 0.1215 (0.0793) recall_adjust-15: 0.1691 (0.1151) recall_hafm-05: 0.2351 (0.1816) recall_hafm-10: 0.4387 (0.3252) recall_hafm-15: 0.5674 (0.4245)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:51,029 hawp.trainer INFO: eta: 3 days, 7:37:06 epoch: 1 iter: 740 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0023 (0.0587) time: 0.2898 (0.5741)
+LOSSES: loss: 1.9860 (2.4686) loss_aux: 0.0237 (0.0267) loss_dis: 0.3993 (0.4099) loss_jloc: 0.0561 (0.0822) loss_joff: 0.4914 (0.4968) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0387 (0.0573) loss_md: 0.2330 (0.2505) loss_neg: 0.2465 (0.3711) loss_pos: 0.2527 (0.3412) loss_res: 0.2185 (0.2300)
+AUXINFO: recall_adjust-05: 0.0675 (0.0384) recall_adjust-10: 0.1349 (0.0811) recall_adjust-15: 0.1925 (0.1176) recall_hafm-05: 0.2237 (0.1829) recall_hafm-10: 0.4263 (0.3280) recall_hafm-15: 0.5736 (0.4281)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:11:57,484 hawp.trainer INFO: eta: 3 days, 6:41:56 epoch: 1 iter: 760 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0024 (0.0572) time: 0.2891 (0.5675)
+LOSSES: loss: 1.8074 (2.4528) loss_aux: 0.0193 (0.0265) loss_dis: 0.3875 (0.4093) loss_jloc: 0.0487 (0.0814) loss_joff: 0.4993 (0.4969) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0308 (0.0567) loss_md: 0.2265 (0.2499) loss_neg: 0.2311 (0.3673) loss_pos: 0.2080 (0.3378) loss_res: 0.2121 (0.2295)
+AUXINFO: recall_adjust-05: 0.0615 (0.0392) recall_adjust-10: 0.1485 (0.0830) recall_adjust-15: 0.2152 (0.1200) recall_hafm-05: 0.2292 (0.1846) recall_hafm-10: 0.4293 (0.3308) recall_hafm-15: 0.5491 (0.4316)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:04,012 hawp.trainer INFO: eta: 3 days, 5:50:22 epoch: 1 iter: 780 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0023 (0.0558) time: 0.2976 (0.5613)
+LOSSES: loss: 1.8496 (2.4382) loss_aux: 0.0213 (0.0265) loss_dis: 0.3896 (0.4088) loss_jloc: 0.0586 (0.0810) loss_joff: 0.5094 (0.4973) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0462 (0.0565) loss_md: 0.2322 (0.2495) loss_neg: 0.1573 (0.3619) loss_pos: 0.1703 (0.3337) loss_res: 0.2183 (0.2292)
+AUXINFO: recall_adjust-05: 0.0680 (0.0400) recall_adjust-10: 0.1468 (0.0848) recall_adjust-15: 0.2040 (0.1224) recall_hafm-05: 0.2563 (0.1866) recall_hafm-10: 0.4514 (0.3339) recall_hafm-15: 0.5767 (0.4351)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:10,637 hawp.trainer INFO: eta: 3 days, 5:02:24 epoch: 1 iter: 800 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0023 (0.0545) time: 0.2973 (0.5556)
+LOSSES: loss: 1.8481 (2.4235) loss_aux: 0.0231 (0.0264) loss_dis: 0.3954 (0.4085) loss_jloc: 0.0520 (0.0803) loss_joff: 0.5163 (0.4979) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0238 (0.0558) loss_md: 0.2274 (0.2489) loss_neg: 0.1853 (0.3577) loss_pos: 0.1578 (0.3308) loss_res: 0.2183 (0.2289)
+AUXINFO: recall_adjust-05: 0.0574 (0.0408) recall_adjust-10: 0.1224 (0.0863) recall_adjust-15: 0.1842 (0.1243) recall_hafm-05: 0.1827 (0.1868) recall_hafm-10: 0.3546 (0.3346) recall_hafm-15: 0.4626 (0.4364)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:17,185 hawp.trainer INFO: eta: 3 days, 4:15:58 epoch: 1 iter: 820 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0024 (0.0532) time: 0.3043 (0.5500)
+LOSSES: loss: 1.9444 (2.4125) loss_aux: 0.0268 (0.0265) loss_dis: 0.3907 (0.4080) loss_jloc: 0.0635 (0.0798) loss_joff: 0.5148 (0.4982) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0471 (0.0555) loss_md: 0.2362 (0.2486) loss_neg: 0.2057 (0.3543) loss_pos: 0.1799 (0.3279) loss_res: 0.2156 (0.2287)
+AUXINFO: recall_adjust-05: 0.0481 (0.0411) recall_adjust-10: 0.1280 (0.0874) recall_adjust-15: 0.1698 (0.1259) recall_hafm-05: 0.2596 (0.1885) recall_hafm-10: 0.4519 (0.3374) recall_hafm-15: 0.5567 (0.4394)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:23,820 hawp.trainer INFO: eta: 3 days, 3:32:36 epoch: 1 iter: 840 lr: 0.000400 max mem: 1987
+RUNTIME: data: 0.0024 (0.0520) time: 0.2977 (0.5448)
+LOSSES: loss: 1.9151 (2.4008) loss_aux: 0.0214 (0.0264) loss_dis: 0.3972 (0.4078) loss_jloc: 0.0462 (0.0792) loss_joff: 0.5146 (0.4988) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0267 (0.0549) loss_md: 0.2304 (0.2481) loss_neg: 0.2414 (0.3517) loss_pos: 0.1975 (0.3255) loss_res: 0.2151 (0.2285)
+AUXINFO: recall_adjust-05: 0.0322 (0.0410) recall_adjust-10: 0.0898 (0.0875) recall_adjust-15: 0.1368 (0.1263) recall_hafm-05: 0.1783 (0.1887) recall_hafm-10: 0.3357 (0.3379) recall_hafm-15: 0.4709 (0.4405)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:30,364 hawp.trainer INFO: eta: 3 days, 2:50:21 epoch: 1 iter: 860 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0509) time: 0.2968 (0.5398)
+LOSSES: loss: 2.2742 (2.3991) loss_aux: 0.0208 (0.0264) loss_dis: 0.3932 (0.4076) loss_jloc: 0.0511 (0.0786) loss_joff: 0.5586 (0.5003) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0315 (0.0545) loss_md: 0.2302 (0.2477) loss_neg: 0.4319 (0.3539) loss_pos: 0.4058 (0.3269) loss_res: 0.2166 (0.2282)
+AUXINFO: recall_adjust-05: 0.0357 (0.0409) recall_adjust-10: 0.0942 (0.0877) recall_adjust-15: 0.1420 (0.1267) recall_hafm-05: 0.1916 (0.1890) recall_hafm-10: 0.3392 (0.3381) recall_hafm-15: 0.4445 (0.4408)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:36,752 hawp.trainer INFO: eta: 3 days, 2:08:33 epoch: 1 iter: 880 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0498) time: 0.2963 (0.5348)
+LOSSES: loss: 2.1788 (2.3938) loss_aux: 0.0204 (0.0263) loss_dis: 0.3958 (0.4073) loss_jloc: 0.0553 (0.0782) loss_joff: 0.5177 (0.5008) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0358 (0.0542) loss_md: 0.2297 (0.2473) loss_neg: 0.3551 (0.3546) loss_pos: 0.2500 (0.3255) loss_res: 0.2165 (0.2280)
+AUXINFO: recall_adjust-05: 0.0081 (0.0402) recall_adjust-10: 0.0331 (0.0865) recall_adjust-15: 0.0819 (0.1256) recall_hafm-05: 0.1908 (0.1891) recall_hafm-10: 0.3183 (0.3376) recall_hafm-15: 0.3990 (0.4400)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:43,201 hawp.trainer INFO: eta: 3 days, 1:29:11 epoch: 1 iter: 900 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0487) time: 0.2930 (0.5301)
+LOSSES: loss: 2.0133 (2.3859) loss_aux: 0.0254 (0.0263) loss_dis: 0.3847 (0.4069) loss_jloc: 0.0564 (0.0777) loss_joff: 0.5021 (0.5010) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0353 (0.0538) loss_md: 0.2262 (0.2469) loss_neg: 0.2726 (0.3529) loss_pos: 0.2371 (0.3243) loss_res: 0.2159 (0.2277)
+AUXINFO: recall_adjust-05: 0.0285 (0.0402) recall_adjust-10: 0.0752 (0.0864) recall_adjust-15: 0.1165 (0.1255) recall_hafm-05: 0.2046 (0.1895) recall_hafm-10: 0.3636 (0.3380) recall_hafm-15: 0.4652 (0.4406)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:49,636 hawp.trainer INFO: eta: 3 days, 0:51:23 epoch: 1 iter: 920 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0477) time: 0.2974 (0.5255)
+LOSSES: loss: 1.9700 (2.3779) loss_aux: 0.0204 (0.0262) loss_dis: 0.3878 (0.4065) loss_jloc: 0.0567 (0.0773) loss_joff: 0.4858 (0.5008) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0354 (0.0534) loss_md: 0.2273 (0.2465) loss_neg: 0.2944 (0.3517) loss_pos: 0.2400 (0.3225) loss_res: 0.2160 (0.2275)
+AUXINFO: recall_adjust-05: 0.0714 (0.0408) recall_adjust-10: 0.1345 (0.0874) recall_adjust-15: 0.1756 (0.1266) recall_hafm-05: 0.2379 (0.1910) recall_hafm-10: 0.4156 (0.3399) recall_hafm-15: 0.5349 (0.4427)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:12:56,147 hawp.trainer INFO: eta: 3 days, 0:15:51 epoch: 1 iter: 940 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0025 (0.0467) time: 0.3030 (0.5213)
+LOSSES: loss: 1.9669 (2.3704) loss_aux: 0.0199 (0.0262) loss_dis: 0.3783 (0.4061) loss_jloc: 0.0590 (0.0770) loss_joff: 0.4772 (0.5003) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0370 (0.0533) loss_md: 0.2357 (0.2463) loss_neg: 0.2424 (0.3497) loss_pos: 0.2383 (0.3210) loss_res: 0.2101 (0.2272)
+AUXINFO: recall_adjust-05: 0.0596 (0.0415) recall_adjust-10: 0.1317 (0.0886) recall_adjust-15: 0.1974 (0.1281) recall_hafm-05: 0.2482 (0.1925) recall_hafm-10: 0.4387 (0.3419) recall_hafm-15: 0.5418 (0.4449)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:13:02,677 hawp.trainer INFO: eta: 2 days, 23:41:58 epoch: 1 iter: 960 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0458) time: 0.2954 (0.5172)
+LOSSES: loss: 1.8333 (2.3593) loss_aux: 0.0179 (0.0261) loss_dis: 0.3931 (0.4059) loss_jloc: 0.0467 (0.0764) loss_joff: 0.4849 (0.5001) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0262 (0.0528) loss_md: 0.2249 (0.2458) loss_neg: 0.1960 (0.3467) loss_pos: 0.2149 (0.3189) loss_res: 0.2183 (0.2271)
+AUXINFO: recall_adjust-05: 0.0923 (0.0425) recall_adjust-10: 0.1655 (0.0903) recall_adjust-15: 0.2190 (0.1300) recall_hafm-05: 0.2342 (0.1935) recall_hafm-10: 0.4200 (0.3435) recall_hafm-15: 0.5246 (0.4466)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:13:09,309 hawp.trainer INFO: eta: 2 days, 23:10:19 epoch: 1 iter: 980 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0449) time: 0.2979 (0.5134)
+LOSSES: loss: 1.7952 (2.3480) loss_aux: 0.0227 (0.0260) loss_dis: 0.3862 (0.4054) loss_jloc: 0.0512 (0.0759) loss_joff: 0.4837 (0.4996) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0332 (0.0524) loss_md: 0.2252 (0.2454) loss_neg: 0.1699 (0.3433) loss_pos: 0.1791 (0.3162) loss_res: 0.2147 (0.2268)
+AUXINFO: recall_adjust-05: 0.0991 (0.0438) recall_adjust-10: 0.1866 (0.0925) recall_adjust-15: 0.2535 (0.1326) recall_hafm-05: 0.2591 (0.1947) recall_hafm-10: 0.4508 (0.3453) recall_hafm-15: 0.5754 (0.4488)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:13:19,091 hawp.trainer INFO: eta: 2 days, 23:06:05 epoch: 1 iter: 1000 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0033 (0.0441) time: 0.4648 (0.5130)
+LOSSES: loss: 1.7466 (2.3363) loss_aux: 0.0221 (0.0259) loss_dis: 0.3853 (0.4050) loss_jloc: 0.0499 (0.0755) loss_joff: 0.4835 (0.4993) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0342 (0.0521) loss_md: 0.2301 (0.2451) loss_neg: 0.1265 (0.3392) loss_pos: 0.2017 (0.3139) loss_res: 0.2138 (0.2265)
+AUXINFO: recall_adjust-05: 0.0871 (0.0447) recall_adjust-10: 0.1792 (0.0943) recall_adjust-15: 0.2537 (0.1350) recall_hafm-05: 0.2855 (0.1963) recall_hafm-10: 0.4758 (0.3479) recall_hafm-15: 0.6019 (0.4518)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:13:30,654 hawp.trainer INFO: eta: 2 days, 23:16:32 epoch: 1 iter: 1020 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0038 (0.0433) time: 0.5400 (0.5142)
+LOSSES: loss: 1.6660 (2.3240) loss_aux: 0.0241 (0.0259) loss_dis: 0.3828 (0.4047) loss_jloc: 0.0458 (0.0750) loss_joff: 0.4783 (0.4989) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0295 (0.0517) loss_md: 0.2201 (0.2447) loss_neg: 0.1273 (0.3351) loss_pos: 0.1636 (0.3109) loss_res: 0.2122 (0.2263)
+AUXINFO: recall_adjust-05: 0.0694 (0.0454) recall_adjust-10: 0.1698 (0.0959) recall_adjust-15: 0.2438 (0.1372) recall_hafm-05: 0.2501 (0.1974) recall_hafm-10: 0.4129 (0.3494) recall_hafm-15: 0.5366 (0.4534)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:13:42,624 hawp.trainer INFO: eta: 2 days, 23:29:50 epoch: 1 iter: 1040 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0038 (0.0426) time: 0.5457 (0.5159)
+LOSSES: loss: 1.7160 (2.3117) loss_aux: 0.0223 (0.0258) loss_dis: 0.3793 (0.4041) loss_jloc: 0.0527 (0.0746) loss_joff: 0.4751 (0.4984) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0411 (0.0515) loss_md: 0.2258 (0.2443) loss_neg: 0.1150 (0.3313) loss_pos: 0.1338 (0.3076) loss_res: 0.2069 (0.2259)
+AUXINFO: recall_adjust-05: 0.0990 (0.0466) recall_adjust-10: 0.1831 (0.0980) recall_adjust-15: 0.2623 (0.1398) recall_hafm-05: 0.2618 (0.1988) recall_hafm-10: 0.4663 (0.3519) recall_hafm-15: 0.6041 (0.4564)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:13:54,422 hawp.trainer INFO: eta: 2 days, 23:41:16 epoch: 1 iter: 1060 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0038 (0.0418) time: 0.5427 (0.5172)
+LOSSES: loss: 1.6126 (2.2998) loss_aux: 0.0196 (0.0257) loss_dis: 0.3830 (0.4037) loss_jloc: 0.0476 (0.0741) loss_joff: 0.4614 (0.4978) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0334 (0.0512) loss_md: 0.2260 (0.2439) loss_neg: 0.0954 (0.3272) loss_pos: 0.1466 (0.3047) loss_res: 0.2138 (0.2257)
+AUXINFO: recall_adjust-05: 0.0863 (0.0477) recall_adjust-10: 0.1999 (0.1001) recall_adjust-15: 0.2664 (0.1424) recall_hafm-05: 0.2821 (0.2004) recall_hafm-10: 0.4958 (0.3543) recall_hafm-15: 0.6054 (0.4591)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:14:03,535 hawp.trainer INFO: eta: 2 days, 23:31:37 epoch: 1 iter: 1080 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0026 (0.0411) time: 0.4062 (0.5161)
+LOSSES: loss: 1.7491 (2.2897) loss_aux: 0.0224 (0.0257) loss_dis: 0.3812 (0.4033) loss_jloc: 0.0611 (0.0738) loss_joff: 0.4621 (0.4972) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0372 (0.0510) loss_md: 0.2201 (0.2435) loss_neg: 0.1327 (0.3235) loss_pos: 0.1337 (0.3022) loss_res: 0.2096 (0.2255)
+AUXINFO: recall_adjust-05: 0.0832 (0.0485) recall_adjust-10: 0.1858 (0.1019) recall_adjust-15: 0.2503 (0.1445) recall_hafm-05: 0.2564 (0.2015) recall_hafm-10: 0.4749 (0.3566) recall_hafm-15: 0.6182 (0.4618)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:14:13,915 hawp.trainer INFO: eta: 2 days, 23:31:53 epoch: 1 iter: 1100 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0028 (0.0404) time: 0.5198 (0.5162)
+LOSSES: loss: 1.6139 (2.2782) loss_aux: 0.0203 (0.0256) loss_dis: 0.3801 (0.4030) loss_jloc: 0.0491 (0.0734) loss_joff: 0.4618 (0.4965) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0322 (0.0507) loss_md: 0.2291 (0.2432) loss_neg: 0.1085 (0.3196) loss_pos: 0.1164 (0.2991) loss_res: 0.2112 (0.2252)
+AUXINFO: recall_adjust-05: 0.0871 (0.0494) recall_adjust-10: 0.1799 (0.1034) recall_adjust-15: 0.2329 (0.1463) recall_hafm-05: 0.2565 (0.2026) recall_hafm-10: 0.4566 (0.3586) recall_hafm-15: 0.5760 (0.4640)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:14:26,214 hawp.trainer INFO: eta: 2 days, 23:46:22 epoch: 1 iter: 1120 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0027 (0.0398) time: 0.5919 (0.5179)
+LOSSES: loss: 1.6698 (2.2676) loss_aux: 0.0234 (0.0256) loss_dis: 0.3839 (0.4027) loss_jloc: 0.0550 (0.0731) loss_joff: 0.4544 (0.4958) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0409 (0.0506) loss_md: 0.2274 (0.2430) loss_neg: 0.0898 (0.3158) loss_pos: 0.1200 (0.2962) loss_res: 0.2144 (0.2251)
+AUXINFO: recall_adjust-05: 0.1153 (0.0506) recall_adjust-10: 0.1988 (0.1053) recall_adjust-15: 0.2548 (0.1485) recall_hafm-05: 0.2964 (0.2042) recall_hafm-10: 0.4910 (0.3610) recall_hafm-15: 0.6287 (0.4668)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:14:38,390 hawp.trainer INFO: eta: 2 days, 23:59:26 epoch: 1 iter: 1140 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0027 (0.0391) time: 0.5952 (0.5195)
+LOSSES: loss: 1.6090 (2.2565) loss_aux: 0.0203 (0.0255) loss_dis: 0.3817 (0.4023) loss_jloc: 0.0445 (0.0727) loss_joff: 0.4625 (0.4952) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0286 (0.0502) loss_md: 0.2287 (0.2427) loss_neg: 0.1231 (0.3123) loss_pos: 0.0944 (0.2934) loss_res: 0.2107 (0.2248)
+AUXINFO: recall_adjust-05: 0.1131 (0.0518) recall_adjust-10: 0.2009 (0.1071) recall_adjust-15: 0.2737 (0.1508) recall_hafm-05: 0.2517 (0.2052) recall_hafm-10: 0.4650 (0.3627) recall_hafm-15: 0.5873 (0.4691)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:14:50,968 hawp.trainer INFO: eta: 3 days, 0:14:55 epoch: 1 iter: 1160 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0028 (0.0385) time: 0.6060 (0.5214)
+LOSSES: loss: 1.6333 (2.2460) loss_aux: 0.0216 (0.0254) loss_dis: 0.3820 (0.4020) loss_jloc: 0.0482 (0.0723) loss_joff: 0.4651 (0.4947) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0306 (0.0499) loss_md: 0.2180 (0.2423) loss_neg: 0.0943 (0.3089) loss_pos: 0.1263 (0.2908) loss_res: 0.2134 (0.2247)
+AUXINFO: recall_adjust-05: 0.1170 (0.0530) recall_adjust-10: 0.2233 (0.1092) recall_adjust-15: 0.2763 (0.1532) recall_hafm-05: 0.2420 (0.2060) recall_hafm-10: 0.4528 (0.3643) recall_hafm-15: 0.5948 (0.4713)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:15:03,205 hawp.trainer INFO: eta: 3 days, 0:27:29 epoch: 1 iter: 1180 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0027 (0.0379) time: 0.5861 (0.5229)
+LOSSES: loss: 1.6492 (2.2367) loss_aux: 0.0196 (0.0254) loss_dis: 0.3840 (0.4018) loss_jloc: 0.0504 (0.0720) loss_joff: 0.4551 (0.4940) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0373 (0.0497) loss_md: 0.2221 (0.2420) loss_neg: 0.0996 (0.3057) loss_pos: 0.1262 (0.2885) loss_res: 0.2132 (0.2245)
+AUXINFO: recall_adjust-05: 0.0835 (0.0537) recall_adjust-10: 0.1703 (0.1105) recall_adjust-15: 0.2336 (0.1547) recall_hafm-05: 0.2665 (0.2072) recall_hafm-10: 0.4599 (0.3659) recall_hafm-15: 0.5920 (0.4734)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:15:15,524 hawp.trainer INFO: eta: 3 days, 0:40:11 epoch: 1 iter: 1200 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0028 (0.0373) time: 0.5973 (0.5245)
+LOSSES: loss: 1.6124 (2.2264) loss_aux: 0.0219 (0.0253) loss_dis: 0.3803 (0.4015) loss_jloc: 0.0490 (0.0716) loss_joff: 0.4599 (0.4935) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0355 (0.0495) loss_md: 0.2238 (0.2417) loss_neg: 0.0854 (0.3021) loss_pos: 0.1265 (0.2859) loss_res: 0.2082 (0.2243)
+AUXINFO: recall_adjust-05: 0.0882 (0.0543) recall_adjust-10: 0.1895 (0.1118) recall_adjust-15: 0.2370 (0.1562) recall_hafm-05: 0.2590 (0.2081) recall_hafm-10: 0.4627 (0.3675) recall_hafm-15: 0.6111 (0.4756)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:15:28,008 hawp.trainer INFO: eta: 3 days, 0:53:36 epoch: 1 iter: 1220 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0027 (0.0368) time: 0.6062 (0.5261)
+LOSSES: loss: 1.5954 (2.2172) loss_aux: 0.0221 (0.0253) loss_dis: 0.3771 (0.4012) loss_jloc: 0.0512 (0.0713) loss_joff: 0.4582 (0.4929) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0409 (0.0493) loss_md: 0.2266 (0.2415) loss_neg: 0.1014 (0.2989) loss_pos: 0.1128 (0.2832) loss_res: 0.2072 (0.2240)
+AUXINFO: recall_adjust-05: 0.0839 (0.0548) recall_adjust-10: 0.1618 (0.1127) recall_adjust-15: 0.2333 (0.1575) recall_hafm-05: 0.2907 (0.2094) recall_hafm-10: 0.4745 (0.3695) recall_hafm-15: 0.5957 (0.4777)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:15:40,181 hawp.trainer INFO: eta: 3 days, 1:04:28 epoch: 1 iter: 1240 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0037 (0.0363) time: 0.5965 (0.5274)
+LOSSES: loss: 1.6542 (2.2081) loss_aux: 0.0213 (0.0252) loss_dis: 0.3805 (0.4009) loss_jloc: 0.0527 (0.0710) loss_joff: 0.4612 (0.4923) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0373 (0.0492) loss_md: 0.2170 (0.2411) loss_neg: 0.0847 (0.2957) loss_pos: 0.1358 (0.2808) loss_res: 0.2119 (0.2239)
+AUXINFO: recall_adjust-05: 0.1180 (0.0557) recall_adjust-10: 0.2110 (0.1142) recall_adjust-15: 0.2549 (0.1593) recall_hafm-05: 0.2806 (0.2105) recall_hafm-10: 0.4705 (0.3711) recall_hafm-15: 0.5838 (0.4795)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:15:52,843 hawp.trainer INFO: eta: 3 days, 1:18:13 epoch: 1 iter: 1260 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0035 (0.0357) time: 0.5977 (0.5291)
+LOSSES: loss: 1.6112 (2.1989) loss_aux: 0.0201 (0.0252) loss_dis: 0.3824 (0.4005) loss_jloc: 0.0458 (0.0707) loss_joff: 0.4519 (0.4917) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0340 (0.0489) loss_md: 0.2206 (0.2408) loss_neg: 0.0901 (0.2927) loss_pos: 0.1239 (0.2787) loss_res: 0.2126 (0.2237)
+AUXINFO: recall_adjust-05: 0.1211 (0.0567) recall_adjust-10: 0.2058 (0.1158) recall_adjust-15: 0.2614 (0.1612) recall_hafm-05: 0.2775 (0.2116) recall_hafm-10: 0.4753 (0.3727) recall_hafm-15: 0.6102 (0.4816)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:16:06,369 hawp.trainer INFO: eta: 3 days, 1:37:09 epoch: 1 iter: 1280 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0035 (0.0352) time: 0.6070 (0.5314)
+LOSSES: loss: 1.6715 (2.1910) loss_aux: 0.0237 (0.0252) loss_dis: 0.3760 (0.4003) loss_jloc: 0.0548 (0.0705) loss_joff: 0.4596 (0.4912) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0427 (0.0488) loss_md: 0.2222 (0.2405) loss_neg: 0.1050 (0.2900) loss_pos: 0.1055 (0.2764) loss_res: 0.2079 (0.2235)
+AUXINFO: recall_adjust-05: 0.1050 (0.0575) recall_adjust-10: 0.1975 (0.1172) recall_adjust-15: 0.2723 (0.1628) recall_hafm-05: 0.2886 (0.2128) recall_hafm-10: 0.5030 (0.3746) recall_hafm-15: 0.6345 (0.4837)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:17:44,236 hawp.trainer INFO: eta: 3 days, 10:54:19 epoch: 1 iter: 1300 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0026 (0.0347) time: 0.4120 (0.5985)
+LOSSES: loss: 1.6244 (2.1822) loss_aux: 0.0166 (0.0250) loss_dis: 0.3738 (0.3998) loss_jloc: 0.0476 (0.0702) loss_joff: 0.4515 (0.4906) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0338 (0.0486) loss_md: 0.2206 (0.2402) loss_neg: 0.0907 (0.2873) loss_pos: 0.0951 (0.2741) loss_res: 0.2074 (0.2232)
+AUXINFO: recall_adjust-05: 0.1137 (0.0585) recall_adjust-10: 0.2042 (0.1185) recall_adjust-15: 0.2639 (0.1644) recall_hafm-05: 0.2828 (0.2139) recall_hafm-10: 0.4578 (0.3760) recall_hafm-15: 0.6037 (0.4853)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:17:50,933 hawp.trainer INFO: eta: 3 days, 10:20:56 epoch: 1 iter: 1320 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0026 (0.0342) time: 0.3041 (0.5945)
+LOSSES: loss: 1.6780 (2.1743) loss_aux: 0.0229 (0.0250) loss_dis: 0.3734 (0.3995) loss_jloc: 0.0568 (0.0699) loss_joff: 0.4590 (0.4901) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0338 (0.0484) loss_md: 0.2219 (0.2399) loss_neg: 0.0964 (0.2846) loss_pos: 0.1343 (0.2720) loss_res: 0.2081 (0.2230)
+AUXINFO: recall_adjust-05: 0.0967 (0.0591) recall_adjust-10: 0.1638 (0.1195) recall_adjust-15: 0.2482 (0.1657) recall_hafm-05: 0.2639 (0.2146) recall_hafm-10: 0.4299 (0.3770) recall_hafm-15: 0.5735 (0.4866)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:17:57,459 hawp.trainer INFO: eta: 3 days, 9:47:30 epoch: 1 iter: 1340 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0338) time: 0.2992 (0.5905)
+LOSSES: loss: 1.6334 (2.1672) loss_aux: 0.0190 (0.0250) loss_dis: 0.3820 (0.3992) loss_jloc: 0.0437 (0.0697) loss_joff: 0.4500 (0.4895) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0357 (0.0483) loss_md: 0.2222 (0.2396) loss_neg: 0.1186 (0.2821) loss_pos: 0.1258 (0.2700) loss_res: 0.2151 (0.2229)
+AUXINFO: recall_adjust-05: 0.1224 (0.0601) recall_adjust-10: 0.1916 (0.1208) recall_adjust-15: 0.2565 (0.1670) recall_hafm-05: 0.2462 (0.2153) recall_hafm-10: 0.4709 (0.3782) recall_hafm-15: 0.5773 (0.4880)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:03,874 hawp.trainer INFO: eta: 3 days, 9:14:22 epoch: 1 iter: 1360 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0333) time: 0.2958 (0.5865)
+LOSSES: loss: 1.5764 (2.1587) loss_aux: 0.0224 (0.0249) loss_dis: 0.3808 (0.3990) loss_jloc: 0.0419 (0.0693) loss_joff: 0.4576 (0.4891) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0281 (0.0480) loss_md: 0.2167 (0.2393) loss_neg: 0.1055 (0.2796) loss_pos: 0.1463 (0.2682) loss_res: 0.2084 (0.2227)
+AUXINFO: recall_adjust-05: 0.1207 (0.0611) recall_adjust-10: 0.2208 (0.1223) recall_adjust-15: 0.2840 (0.1689) recall_hafm-05: 0.2492 (0.2157) recall_hafm-10: 0.4081 (0.3790) recall_hafm-15: 0.5427 (0.4891)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:10,379 hawp.trainer INFO: eta: 3 days, 8:42:43 epoch: 1 iter: 1380 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0329) time: 0.2970 (0.5827)
+LOSSES: loss: 1.5819 (2.1506) loss_aux: 0.0186 (0.0249) loss_dis: 0.3759 (0.3987) loss_jloc: 0.0454 (0.0690) loss_joff: 0.4673 (0.4888) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0367 (0.0478) loss_md: 0.2219 (0.2390) loss_neg: 0.0905 (0.2770) loss_pos: 0.1244 (0.2662) loss_res: 0.2117 (0.2226)
+AUXINFO: recall_adjust-05: 0.1104 (0.0619) recall_adjust-10: 0.2142 (0.1236) recall_adjust-15: 0.2858 (0.1704) recall_hafm-05: 0.2806 (0.2166) recall_hafm-10: 0.4779 (0.3806) recall_hafm-15: 0.6132 (0.4909)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:16,959 hawp.trainer INFO: eta: 3 days, 8:12:26 epoch: 1 iter: 1400 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0023 (0.0324) time: 0.3023 (0.5791)
+LOSSES: loss: 1.5816 (2.1427) loss_aux: 0.0208 (0.0248) loss_dis: 0.3769 (0.3984) loss_jloc: 0.0530 (0.0688) loss_joff: 0.4529 (0.4883) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0365 (0.0477) loss_md: 0.2214 (0.2388) loss_neg: 0.0913 (0.2743) loss_pos: 0.1122 (0.2640) loss_res: 0.2086 (0.2224)
+AUXINFO: recall_adjust-05: 0.1058 (0.0627) recall_adjust-10: 0.1921 (0.1247) recall_adjust-15: 0.2513 (0.1717) recall_hafm-05: 0.2792 (0.2175) recall_hafm-10: 0.4857 (0.3821) recall_hafm-15: 0.6325 (0.4927)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:23,300 hawp.trainer INFO: eta: 3 days, 7:41:35 epoch: 1 iter: 1420 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0320) time: 0.2944 (0.5754)
+LOSSES: loss: 1.7104 (2.1367) loss_aux: 0.0220 (0.0248) loss_dis: 0.3762 (0.3981) loss_jloc: 0.0587 (0.0687) loss_joff: 0.4613 (0.4879) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0412 (0.0476) loss_md: 0.2248 (0.2386) loss_neg: 0.0955 (0.2719) loss_pos: 0.1376 (0.2622) loss_res: 0.2089 (0.2222)
+AUXINFO: recall_adjust-05: 0.1207 (0.0636) recall_adjust-10: 0.1969 (0.1259) recall_adjust-15: 0.2751 (0.1732) recall_hafm-05: 0.2987 (0.2186) recall_hafm-10: 0.5000 (0.3838) recall_hafm-15: 0.6388 (0.4947)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:30,360 hawp.trainer INFO: eta: 3 days, 7:15:44 epoch: 1 iter: 1440 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0025 (0.0316) time: 0.3146 (0.5723)
+LOSSES: loss: 1.5652 (2.1291) loss_aux: 0.0185 (0.0247) loss_dis: 0.3741 (0.3978) loss_jloc: 0.0457 (0.0684) loss_joff: 0.4486 (0.4874) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0304 (0.0474) loss_md: 0.2157 (0.2383) loss_neg: 0.0987 (0.2695) loss_pos: 0.1271 (0.2604) loss_res: 0.2063 (0.2220)
+AUXINFO: recall_adjust-05: 0.1186 (0.0644) recall_adjust-10: 0.2162 (0.1273) recall_adjust-15: 0.2560 (0.1747) recall_hafm-05: 0.2715 (0.2194) recall_hafm-10: 0.4734 (0.3850) recall_hafm-15: 0.5917 (0.4960)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:36,981 hawp.trainer INFO: eta: 3 days, 6:48:06 epoch: 1 iter: 1460 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0312) time: 0.3058 (0.5690)
+LOSSES: loss: 1.5354 (2.1223) loss_aux: 0.0209 (0.0247) loss_dis: 0.3781 (0.3975) loss_jloc: 0.0451 (0.0682) loss_joff: 0.4519 (0.4870) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0267 (0.0472) loss_md: 0.2188 (0.2380) loss_neg: 0.1000 (0.2673) loss_pos: 0.0969 (0.2583) loss_res: 0.2070 (0.2218)
+AUXINFO: recall_adjust-05: 0.1125 (0.0651) recall_adjust-10: 0.2089 (0.1285) recall_adjust-15: 0.2752 (0.1760) recall_hafm-05: 0.2687 (0.2202) recall_hafm-10: 0.4648 (0.3862) recall_hafm-15: 0.6131 (0.4974)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:43,276 hawp.trainer INFO: eta: 3 days, 6:19:23 epoch: 1 iter: 1480 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0308) time: 0.2923 (0.5656)
+LOSSES: loss: 1.5598 (2.1149) loss_aux: 0.0219 (0.0247) loss_dis: 0.3833 (0.3973) loss_jloc: 0.0481 (0.0679) loss_joff: 0.4482 (0.4865) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0281 (0.0470) loss_md: 0.2174 (0.2378) loss_neg: 0.0868 (0.2650) loss_pos: 0.0940 (0.2563) loss_res: 0.2116 (0.2217)
+AUXINFO: recall_adjust-05: 0.0947 (0.0657) recall_adjust-10: 0.1917 (0.1294) recall_adjust-15: 0.2567 (0.1771) recall_hafm-05: 0.2522 (0.2207) recall_hafm-10: 0.4512 (0.3870) recall_hafm-15: 0.5714 (0.4985)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:49,757 hawp.trainer INFO: eta: 3 days, 5:52:27 epoch: 1 iter: 1500 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0304) time: 0.2989 (0.5624)
+LOSSES: loss: 1.6344 (2.1086) loss_aux: 0.0238 (0.0246) loss_dis: 0.3790 (0.3971) loss_jloc: 0.0571 (0.0678) loss_joff: 0.4493 (0.4861) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0423 (0.0470) loss_md: 0.2261 (0.2377) loss_neg: 0.0757 (0.2625) loss_pos: 0.0930 (0.2541) loss_res: 0.2081 (0.2216)
+AUXINFO: recall_adjust-05: 0.0893 (0.0660) recall_adjust-10: 0.1841 (0.1301) recall_adjust-15: 0.2435 (0.1780) recall_hafm-05: 0.3172 (0.2221) recall_hafm-10: 0.4983 (0.3887) recall_hafm-15: 0.6385 (0.5002)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:18:57,149 hawp.trainer INFO: eta: 3 days, 5:31:12 epoch: 1 iter: 1520 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0025 (0.0301) time: 0.3450 (0.5598)
+LOSSES: loss: 1.5399 (2.1017) loss_aux: 0.0226 (0.0246) loss_dis: 0.3697 (0.3968) loss_jloc: 0.0503 (0.0676) loss_joff: 0.4441 (0.4856) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0373 (0.0469) loss_md: 0.2215 (0.2375) loss_neg: 0.0688 (0.2600) loss_pos: 0.0963 (0.2520) loss_res: 0.2059 (0.2214)
+AUXINFO: recall_adjust-05: 0.0794 (0.0664) recall_adjust-10: 0.1778 (0.1308) recall_adjust-15: 0.2554 (0.1790) recall_hafm-05: 0.2814 (0.2227) recall_hafm-10: 0.4701 (0.3897) recall_hafm-15: 0.6098 (0.5017)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:19:03,796 hawp.trainer INFO: eta: 3 days, 5:06:29 epoch: 1 iter: 1540 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0297) time: 0.3045 (0.5569)
+LOSSES: loss: 1.4590 (2.0947) loss_aux: 0.0184 (0.0246) loss_dis: 0.3741 (0.3965) loss_jloc: 0.0447 (0.0674) loss_joff: 0.4542 (0.4851) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0256 (0.0467) loss_md: 0.2141 (0.2372) loss_neg: 0.0689 (0.2577) loss_pos: 0.1187 (0.2502) loss_res: 0.2089 (0.2212)
+AUXINFO: recall_adjust-05: 0.1170 (0.0670) recall_adjust-10: 0.2095 (0.1319) recall_adjust-15: 0.2702 (0.1802) recall_hafm-05: 0.2549 (0.2232) recall_hafm-10: 0.4523 (0.3904) recall_hafm-15: 0.5825 (0.5028)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+
+2026-03-11 01:19:10,690 hawp.trainer INFO: eta: 3 days, 4:43:43 epoch: 1 iter: 1560 lr: 0.000400 max mem: 2098
+RUNTIME: data: 0.0024 (0.0294) time: 0.3043 (0.5542)
+LOSSES: loss: 1.6191 (2.0886) loss_aux: 0.0183 (0.0245) loss_dis: 0.3765 (0.3962) loss_jloc: 0.0506 (0.0672) loss_joff: 0.4537 (0.4848) loss_line_af: 0.0000 (0.0000) loss_line_df: 0.0000 (0.0000) loss_lineness: 0.0351 (0.0465) loss_md: 0.2177 (0.2369) loss_neg: 0.1038 (0.2558) loss_pos: 0.1108 (0.2486) loss_res: 0.2105 (0.2210)
+AUXINFO: recall_adjust-05: 0.0971 (0.0678) recall_adjust-10: 0.1817 (0.1328) recall_adjust-15: 0.2344 (0.1813) recall_hafm-05: 0.2825 (0.2240) recall_hafm-10: 0.5114 (0.3915) recall_hafm-15: 0.6038 (0.5041)
+WorkingDIR: output/experiments\enhanced_plnet_crossattn\260311-010435
+

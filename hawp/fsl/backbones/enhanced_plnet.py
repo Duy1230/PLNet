@@ -101,9 +101,13 @@ class EnhancedPLNet(nn.Module):
         self.cross_attn_heads = int(_cfg_get(enhancements, "CROSS_ATTN_HEADS", 4))
         self.cross_attn_dim = int(_cfg_get(enhancements, "CROSS_ATTN_DIM", 256))
         self.cross_attn_dropout = float(_cfg_get(enhancements, "CROSS_ATTN_DROPOUT", 0.1))
+        self.cross_attn_spatial_reduction = int(
+            _cfg_get(enhancements, "CROSS_ATTN_SPATIAL_REDUCTION", 1)
+        )
 
         self.use_line_field = bool(_cfg_get(enhancements, "USE_LINE_FIELD", False))
         self.line_field_hidden = int(_cfg_get(enhancements, "LINE_FIELD_HIDDEN", 128))
+        self.grad_checkpoint = bool(_cfg_get(enhancements, "GRAD_CHECKPOINT", False))
 
         self.unfreeze_backbone = bool(_cfg_get(enhancements, "UNFREEZE_BACKBONE", False))
         self.latest_aux_outputs = {}
@@ -144,13 +148,23 @@ class EnhancedPLNet(nn.Module):
 
         use_dcn_bottleneck = self.use_dcn and self.dcn_bottleneck_only
         self.stack1 = DeformableUNet(
-            256, 128, 128, layer_num=4, use_dcn_bottleneck=use_dcn_bottleneck
+            256,
+            128,
+            128,
+            layer_num=4,
+            use_dcn_bottleneck=use_dcn_bottleneck,
+            use_gradient_checkpointing=self.grad_checkpoint,
         )
         self.fc1 = nn.Conv2d(128, 256, kernel_size=1)
         self.score1 = head(256, 9)
 
         self.stack2 = DeformableUNet(
-            128, 128, 128, layer_num=4, use_dcn_bottleneck=use_dcn_bottleneck
+            128,
+            128,
+            128,
+            layer_num=4,
+            use_dcn_bottleneck=use_dcn_bottleneck,
+            use_gradient_checkpointing=self.grad_checkpoint,
         )
         self.fc2 = nn.Conv2d(128, 256, kernel_size=1)
         self.score2 = head(256, 9)
@@ -166,6 +180,7 @@ class EnhancedPLNet(nn.Module):
                 embed_dim=self.cross_attn_dim,
                 num_heads=self.cross_attn_heads,
                 dropout=self.cross_attn_dropout,
+                spatial_reduction=self.cross_attn_spatial_reduction,
             )
             if self.cross_attn_dim == 256:
                 self.line_back_proj = nn.Identity()
@@ -207,7 +222,12 @@ class EnhancedPLNet(nn.Module):
     def forward(self, image):
         self.latest_aux_outputs = {}
 
-        point_features = self.point_encoder(image[:, :1, ...])
+        if self.unfreeze_backbone:
+            point_features = self.point_encoder(image[:, :1, ...])
+        else:
+            with torch.no_grad():
+                point_features = self.point_encoder(image[:, :1, ...])
+            point_features = [feat.detach() for feat in point_features]
         shared_features, point_low = self._feature_fusion(point_features)
 
         x_stack1 = self.stack1(shared_features)
