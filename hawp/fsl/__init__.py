@@ -1,4 +1,11 @@
-from . import config
-from . import backbones
-from . import dataset
-from . import model
+import importlib
+
+__all__ = ["config", "backbones", "dataset", "model"]
+
+
+def __getattr__(name):
+    if name in __all__:
+        module = importlib.import_module(f"{__name__}.{name}")
+        globals()[name] = module
+        return module
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

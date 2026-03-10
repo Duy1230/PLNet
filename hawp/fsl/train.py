@@ -8,8 +8,18 @@ import datetime
 import argparse
 import logging
 import json
+import sys
+from pathlib import Path
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
+
+# Allow running this file directly (python hawp/fsl/train.py ...)
+# by ensuring the repository root is on sys.path.
+if __package__ is None or __package__ == "":
+    repo_root = Path(__file__).resolve().parents[2]
+    repo_root_str = str(repo_root)
+    if repo_root_str not in sys.path:
+        sys.path.insert(0, repo_root_str)
 
 import hawp
 from hawp.base.utils.comm import to_device

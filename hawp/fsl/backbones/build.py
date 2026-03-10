@@ -3,6 +3,7 @@ from .stacked_hg import HourglassNet, Bottleneck2D
 from .multi_task_head import MultitaskHead
 from .resnets import ResNets
 from .point_line import PointLineNet
+from .enhanced_plnet import EnhancedPLNet
 # from .point_line_new import PointLineNet
 from .stacked_point_line import StackPointLine
 
@@ -93,6 +94,19 @@ def build_hg(cfg, **kwargs):
 
     model.out_feature_channels = out_feature_channels
 
+    return model
+
+
+@MODELS.register("EnhancedPointLine")
+def build_enhanced_point_line(cfg, **kwargs):
+    head_size = cfg.MODEL.HEAD_SIZE
+    out_feature_channels = cfg.MODEL.OUT_FEATURE_CHANNELS
+
+    model = EnhancedPLNet(
+        head=lambda c_in, c_out: MultitaskHead(c_in, c_out, head_size=head_size),
+        cfg=cfg,
+    )
+    model.out_feature_channels = out_feature_channels
     return model
 
 

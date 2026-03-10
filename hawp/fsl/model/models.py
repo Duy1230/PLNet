@@ -395,6 +395,13 @@ class WireframeDetector(nn.Module):
             'height': annotations[0]['height'],
         }
 
+        backbone_aux = getattr(self.backbone, "latest_aux_outputs", None)
+        if isinstance(backbone_aux, dict) and "line_field" in backbone_aux:
+            output["line_field"] = {
+                "df": backbone_aux["line_field"]["df"].detach(),
+                "af": backbone_aux["line_field"]["af"].detach(),
+            }
+
         return output, extra_info
 
     def focal_loss(self,input, target, gamma=2.0):
@@ -544,15 +551,18 @@ class WireframeDetector(nn.Module):
         
         outputs, features = self.backbone(images)
 
+        zero = torch.tensor(0.0, device=device)
         loss_dict = {
-            'loss_md': 0.0,
-            'loss_dis': 0.0,
-            'loss_res': 0.0,
-            'loss_jloc': 0.0,
-            'loss_joff': 0.0,
-            'loss_pos': 0.0,
-            'loss_neg': 0.0,
-            'loss_aux': 0.0,
+            'loss_md': zero.clone(),
+            'loss_dis': zero.clone(),
+            'loss_res': zero.clone(),
+            'loss_jloc': zero.clone(),
+            'loss_joff': zero.clone(),
+            'loss_pos': zero.clone(),
+            'loss_neg': zero.clone(),
+            'loss_aux': zero.clone(),
+            'loss_line_df': zero.clone(),
+            'loss_line_af': zero.clone(),
         }
 
         extra_info = defaultdict(list)
@@ -615,6 +625,21 @@ class WireframeDetector(nn.Module):
                 loss_map = F.l1_loss(lines_learned, lines_tgt,reduction='none').mean(dim=-1)
                 
                 loss_dict['loss_aux'] += torch.mean(loss_map*wt)/torch.mean(mask)
+
+        backbone_aux = getattr(self.backbone, "latest_aux_outputs", None)
+        if isinstance(backbone_aux, dict) and "line_field" in backbone_aux:
+            line_field = backbone_aux["line_field"]
+            df_pred = line_field.get("df", None)
+            af_pred = line_field.get("af", None)
+            if df_pred is not None and af_pred is not None:
+                mask_mean = torch.mean(mask).clamp_min(1e-6)
+                df_err = F.l1_loss(df_pred, targets["dis"], reduction="none")
+                loss_dict["loss_line_df"] = torch.mean(df_err * mask) / mask_mean
+
+                md_angle = (targets["md"][:, :1] - 0.5) * np.pi * 2.0
+                af_target = torch.cat((torch.cos(md_angle), torch.sin(md_angle)), dim=1)
+                af_err = 1.0 - torch.sum(af_pred * af_target, dim=1, keepdim=True)
+                loss_dict["loss_line_af"] = torch.mean(af_err * mask) / mask_mean
                 
         for key in extra_info.keys():
             extra_info[key] = extra_info[key]/batch_size
