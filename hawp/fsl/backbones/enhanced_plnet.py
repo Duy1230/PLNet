@@ -174,7 +174,7 @@ class EnhancedPLNet(nn.Module):
                 raise ValueError(
                     "CROSS_ATTN_DIM must be divisible by CROSS_ATTN_HEADS."
                 )
-            self.point_proj = nn.Conv2d(low_c, self.cross_attn_dim, kernel_size=1)
+            self.point_proj = nn.Conv2d(256, self.cross_attn_dim, kernel_size=1)
             self.line_proj = nn.Conv2d(256, self.cross_attn_dim, kernel_size=1)
             self.cross_attention = PointLineCrossAttention(
                 embed_dim=self.cross_attn_dim,
@@ -182,6 +182,7 @@ class EnhancedPLNet(nn.Module):
                 dropout=self.cross_attn_dropout,
                 spatial_reduction=self.cross_attn_spatial_reduction,
             )
+            self.cross_attn_gate = nn.Parameter(torch.zeros(1))
             if self.cross_attn_dim == 256:
                 self.line_back_proj = nn.Identity()
             else:
@@ -228,7 +229,7 @@ class EnhancedPLNet(nn.Module):
             with torch.no_grad():
                 point_features = self.point_encoder(image[:, :1, ...])
             point_features = [feat.detach() for feat in point_features]
-        shared_features, point_low = self._feature_fusion(point_features)
+        shared_features, _ = self._feature_fusion(point_features)
 
         x_stack1 = self.stack1(shared_features)
         x_stack1_proj = self.fc1(x_stack1)
@@ -238,7 +239,7 @@ class EnhancedPLNet(nn.Module):
         x_stack2_proj = self.fc2(x_stack2)
 
         if self.use_cross_attention:
-            point_tokens = self.point_proj(point_low)
+            point_tokens = self.point_proj(shared_features)
             if point_tokens.shape[-2:] != x_stack2_proj.shape[-2:]:
                 point_tokens = F.interpolate(
                     point_tokens,
@@ -248,12 +249,12 @@ class EnhancedPLNet(nn.Module):
                 )
             line_tokens = self.line_proj(x_stack2_proj)
             refined_point, refined_line = self.cross_attention(point_tokens, line_tokens)
-            x_stack2_proj = self.line_back_proj(refined_line)
+            x_stack2_proj = x_stack2_proj + self.cross_attn_gate * self.line_back_proj(refined_line)
             self.latest_aux_outputs["refined_point_features"] = refined_point
             self.latest_aux_outputs["refined_line_features"] = refined_line
 
         if self.line_field_head is not None:
             self.latest_aux_outputs["line_field"] = self.line_field_head(x_stack2_proj)
 
-        score2 = self.score2(x_stack2_proj)
+        score2 = self.score1(x_stack2_proj)
         return [score2, score1], x_stack2_proj

@@ -10,9 +10,9 @@ def msTPFP(line_pred, line_gt, threshold):
 
     choice = np.argmin(diff, 1)
     dist = np.min(diff, 1)
-    hit = np.zeros(len(line_gt), np.bool)
-    tp = np.zeros(len(line_pred), np.float)
-    fp = np.zeros(len(line_pred), np.float)
+    hit = np.zeros(len(line_gt), dtype=np.bool_)
+    tp = np.zeros(len(line_pred), dtype=np.float64)
+    fp = np.zeros(len(line_pred), dtype=np.float64)
     for i in range(len(line_pred)):
         if dist[i] < threshold and not hit[choice[i]]:
             hit[choice[i]] = True
@@ -39,9 +39,9 @@ def TPFP(lines_dt, lines_gt, threshold):
     # diff = np.minimum(diff1+diff2, diff3+diff4)
     choice = np.argmin(diff,1)
     dist = np.min(diff,1)
-    hit = np.zeros(len(lines_gt), np.bool)
-    tp = np.zeros(len(lines_dt), np.float)
-    fp = np.zeros(len(lines_dt),np.float)
+    hit = np.zeros(len(lines_gt), dtype=np.bool_)
+    tp = np.zeros(len(lines_dt), dtype=np.float64)
+    fp = np.zeros(len(lines_dt), dtype=np.float64)
 
     for i in range(lines_dt.shape[0]):
         if dist[i] < threshold and not hit[choice[i]]:
