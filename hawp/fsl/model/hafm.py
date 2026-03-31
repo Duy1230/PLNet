@@ -130,7 +130,7 @@ def _encode_ls_fallback(lines, input_height, input_width, height, width, num_lin
 
 def _encode_ls(lines, input_height, input_width, height, width, num_lines):
     # Fast path: compiled CUDA op.
-    if _C is not None and hasattr(_C, "encodels"):
+    if lines.is_cuda and _C is not None and hasattr(_C, "encodels"):
         try:
             return _C.encodels(lines, input_height, input_width, height, width, num_lines)
         except Exception:
@@ -147,6 +147,16 @@ class HAFMencoder(object):
         self.num_static_pos_lines = cfg.ENCODER.NUM_STATIC_POS_LINES
         self.num_static_neg_lines = cfg.ENCODER.NUM_STATIC_NEG_LINES
         self.bck_weight = cfg.ENCODER.BACKGROUND_WEIGHT
+        self._meshgrid_cache = {}
+
+    def _get_cached_meshgrid(self, height, width, device):
+        key = (height, width, device)
+        if key not in self._meshgrid_cache:
+            self._meshgrid_cache[key] = torch.meshgrid(
+                torch.arange(width, dtype=torch.float32, device=device),
+                torch.arange(height, dtype=torch.float32, device=device),
+                indexing='xy')
+        return self._meshgrid_cache[key]
     def __call__(self,annotations):
         targets = []
         metas   = []
@@ -168,28 +178,14 @@ class HAFMencoder(object):
         junctions = ann['junctions']
         device = junctions.device
         height, width = ann['height'], ann['width']
-        # jmap = torch.zeros((height,width),device=device)
-        # joff = torch.zeros((2,height,width),device=device,dtype=torch.float32)
-        jmap = np.zeros((height,width),dtype=np.float32)
-        joff = np.zeros((2,height,width),dtype=np.float32)
-        # junctions[:,0] = junctions[:,0].clamp(min=0,max=width-1)
-        # junctions[:,1] = junctions[:,1].clamp(min=0,max=height-1)
-        junctions_np = junctions.cpu().numpy()
-        xint, yint = junctions_np[:,0].astype(np.int32), junctions_np[:,1].astype(np.int32)
-        off_x = junctions_np[:,0] - np.floor(junctions_np[:,0]) - 0.5
-        off_y = junctions_np[:,1] - np.floor(junctions_np[:,1]) - 0.5
-        jmap[yint, xint] = 1
-        joff[0,yint, xint] = off_x
-        joff[1,yint, xint] = off_y
-        # xint,yint = junctions[:,0].long(), junctions[:,1].long()
-        # off_x = junctions[:,0] - xint.float()-0.5
-        # off_y = junctions[:,1] - yint.float()-0.5
-
-        # jmap[yint,xint] = 1
-        # joff[0,yint,xint] = off_x
-        # joff[1,yint,xint] = off_y
-        jmap = torch.from_numpy(jmap).to(device)
-        joff = torch.from_numpy(joff).to(device)
+        jmap = torch.zeros((height,width),device=device)
+        joff = torch.zeros((2,height,width),device=device,dtype=torch.float32)
+        xint,yint = junctions[:,0].long(), junctions[:,1].long()
+        off_x = junctions[:,0] - xint.float()-0.5
+        off_y = junctions[:,1] - yint.float()-0.5
+        jmap[yint,xint] = 1
+        joff[0,yint,xint] = off_x
+        joff[1,yint,xint] = off_y
 
         edges_positive = ann['edges_positive']
         edges_negative = ann['edges_negative']
@@ -202,7 +198,7 @@ class HAFMencoder(object):
 
         center_points = (lines[:,:2] + lines[:,2:])/2.0
         cmap = torch.zeros((height,width),device=device)
-        xx, yy =torch.meshgrid(torch.arange(width,dtype=torch.float32,device=device),torch.arange(height,dtype=torch.float32,device=device),indexing='xy')
+        xx, yy = self._get_cached_meshgrid(height, width, device)
 
         ctl_dis = torch.min((xx[...,None]-center_points[None,None,:,0])**2 + (yy[...,None]-center_points[None,None,:,1])**2,dim=-1)[0]
         cmask = ctl_dis<=4.0
@@ -211,15 +207,16 @@ class HAFMencoder(object):
         cmap[cyint,cxint] = 1
 
 
-        lpos = np.random.permutation(lines.cpu().numpy())[:self.num_static_pos_lines]
-        lneg = np.random.permutation(lines_neg.cpu().numpy())[:self.num_static_neg_lines]
-        # lpos = lines[torch.randperm(lines.size(0),device=device)][:self.num_static_pos_lines]
-        # lneg = lines_neg[torch.randperm(lines_neg.size(0),device=device)][:self.num_static_neg_lines]
-        lpos = torch.from_numpy(lpos).to(device)
-        lneg = torch.from_numpy(lneg).to(device)
-        
+        n_pos = lines.size(0)
+        k_pos = min(self.num_static_pos_lines, n_pos)
+        lpos = lines[torch.randint(0, max(n_pos, 1), (k_pos,), device=device)]
+
+        n_neg = lines_neg.size(0)
+        k_neg = min(self.num_static_neg_lines, n_neg)
+        lneg = lines_neg[torch.randint(0, max(n_neg, 1), (k_neg,), device=device)]
+
         lpre = torch.cat((lpos,lneg),dim=0)
-        _swap = (torch.rand(lpre.size(0))>0.5).to(device)
+        _swap = (torch.rand(lpre.size(0), device=device)>0.5)
         lpre[_swap] = lpre[_swap][:,[2,3,0,1]]
         lpre_label = torch.cat(
             [

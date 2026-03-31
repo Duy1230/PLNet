@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import  numpy as np
 import time
 from scipy.optimize import linear_sum_assignment
+from torch.utils.data.dataloader import default_collate
 
 from .hafm import HAFMencoder
 from .losses import cross_entropy_loss_for_junction, sigmoid_l1_loss, sigmoid_focal_loss
@@ -119,7 +120,8 @@ class WireframeDetector(nn.Module):
         self.use_residual = int(cfg.MODEL.PARSING_HEAD.USE_RESIDUAL)
 
         self.register_buffer('tspan', torch.linspace(0, 1, self.n_pts0)[None,None,:].cuda())
-        
+        self._meshgrid_cache = {}
+
         assert cfg.MODEL.LOI_POOLING.TYPE in ['softmax', 'sigmoid']
         assert cfg.MODEL.LOI_POOLING.ACTIVATION in ['relu', 'gelu']
 
@@ -164,40 +166,38 @@ class WireframeDetector(nn.Module):
         self.train_step = 0
 
     def bilinear_sampling(self, features, points):
-        h,w = features.size(1), features.size(2)
-        px, py = points[:,0], points[:,1]
-        
-        px0 = px.floor().clamp(min=0, max=w-1)
-        py0 = py.floor().clamp(min=0, max=h-1)
-        px1 = (px0 + 1).clamp(min=0, max=w-1)
-        py1 = (py0 + 1).clamp(min=0, max=h-1)
-        px0l, py0l, px1l, py1l = px0.long(), py0.long(), px1.long(), py1.long()
-        xp = features[:, py0l, px0l] * (py1-py) * (px1 - px)+ features[:, py1l, px0l] * (py - py0) * (px1 - px)+ features[:, py0l, px1l] * (py1 - py) * (px - px0)+ features[:, py1l, px1l] * (py - py0) * (px - px0)
+        h, w = features.size(1), features.size(2)
+        grid_x = 2.0 * points[:, 0] / (w - 1) - 1.0
+        grid_y = 2.0 * points[:, 1] / (h - 1) - 1.0
+        grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(0).unsqueeze(0)
+        sampled = F.grid_sample(
+            features.unsqueeze(0), grid, mode='bilinear',
+            padding_mode='border', align_corners=True,
+        )
+        return sampled.squeeze(0).squeeze(1)
 
-        return xp
-    
     def get_line_points(self, lines_per_im):
         U,V = lines_per_im[:,:2], lines_per_im[:,2:]
         sampled_points = U[:,:,None]*self.tspan + V[:,:,None]*(1-self.tspan) -0.5
         return sampled_points
-    
+
     def compute_loi_features(self, features_per_image, lines_per_im):
-        num_channels = features_per_image.shape[0]
-        h,w = features_per_image.size(1), features_per_image.size(2)
-        U,V = lines_per_im[:,:2], lines_per_im[:,2:]
-        tspan = self.tspan[...,1:-1]
-        sampled_points = U[:,:,None]*tspan + V[:,:,None]*(1-tspan) -0.5
+        h, w = features_per_image.size(1), features_per_image.size(2)
+        U, V = lines_per_im[:, :2], lines_per_im[:, 2:]
+        tspan = self.tspan[..., 1:-1]
+        sampled_points = U[:, :, None] * tspan + V[:, :, None] * (1 - tspan) - 0.5
+        sampled_points = sampled_points.permute(0, 2, 1).reshape(-1, 2)
 
-        sampled_points = sampled_points.permute((0,2,1)).reshape(-1,2)
-        px,py = sampled_points[:,0],sampled_points[:,1]
-        px0 = px.floor().clamp(min=0, max=w-1)
-        py0 = py.floor().clamp(min=0, max=h-1)
-        px1 = (px0 + 1).clamp(min=0, max=w-1)
-        py1 = (py0 + 1).clamp(min=0, max=h-1)
-        px0l, py0l, px1l, py1l = px0.long(), py0.long(), px1.long(), py1.long()
-        xp = features_per_image[:, py0l, px0l] * (py1-py) * (px1 - px)+ features_per_image[:, py1l, px0l] * (py - py0) * (px1 - px)+ features_per_image[:, py0l, px1l] * (py1 - py) * (px - px0)+ features_per_image[:, py1l, px1l] * (py - py0) * (px - px0)
-        xp = xp.reshape(features_per_image.shape[0],-1,tspan.numel()).permute(1,0,2).contiguous()
+        grid_x = 2.0 * sampled_points[:, 0] / (w - 1) - 1.0
+        grid_y = 2.0 * sampled_points[:, 1] / (h - 1) - 1.0
+        grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(0).unsqueeze(0)
 
+        xp = F.grid_sample(
+            features_per_image.unsqueeze(0), grid, mode='bilinear',
+            padding_mode='border', align_corners=True,
+        )
+        xp = xp.squeeze(0).squeeze(1)
+        xp = xp.reshape(features_per_image.shape[0], -1, tspan.numel()).permute(1, 0, 2).contiguous()
         return xp.flatten(1)
     def pooling(self, features_per_line):
         
@@ -334,10 +334,7 @@ class WireframeDetector(nn.Module):
 
         extra_info['time_proposal'] = time.time() - extra_info['time_proposal']
         extra_info['time_matching'] = time.time()
-        
-        
-        grid = torch.stack(torch.meshgrid(torch.arange(loi_features.shape[2],device=device),torch.arange(loi_features.shape[3],device=device),indexing='xy'),dim=-1).unsqueeze(0).repeat(2*self.use_residual+1,1,1,1).reshape(-1,2)
-        
+
         lines_adjusted, lines_init, perm, unique_indices = self.wireframe_matcher(juncs_pred, lines_pred,return_index=True)
         extra_info['time_matching'] = time.time() - extra_info['time_matching']
         extra_info['time_verification'] = time.time()
@@ -416,9 +413,6 @@ class WireframeDetector(nn.Module):
         extra_info = defaultdict(float)
         batch_size = lines_batch.shape[0]
         device = lines_batch.device
-        resinds = torch.arange(-self.use_residual,self.use_residual+1,device=device).reshape(-1,1,1).repeat(1,lines_batch.shape[2],lines_batch.shape[3]).reshape(-1)
-
-        grid = torch.stack(torch.meshgrid(torch.arange(lines_batch.shape[2],device=device),torch.arange(lines_batch.shape[3],device=device),indexing='xy'),dim=-1).unsqueeze(0).repeat(2*self.use_residual+1,1,1,1).reshape(-1,2)
         
         # if self.train_step % 100 == 0:
         #     import os
@@ -543,27 +537,26 @@ class WireframeDetector(nn.Module):
 
     def forward_train(self, images, annotations = None):
         device = images.device
-
-        targets , metas = self.hafm_encoder(annotations)
+        if (
+            annotations
+            and isinstance(annotations[0], dict)
+            and "hafm_target" in annotations[0]
+            and "hafm_meta" in annotations[0]
+        ):
+            targets = default_collate([ann["hafm_target"] for ann in annotations])
+            metas = [ann["hafm_meta"] for ann in annotations]
+        else:
+            targets, metas = self.hafm_encoder(annotations)
 
         self.train_step += 1
 
         
         outputs, features = self.backbone(images)
 
-        zero = torch.tensor(0.0, device=device)
-        loss_dict = {
-            'loss_md': zero.clone(),
-            'loss_dis': zero.clone(),
-            'loss_res': zero.clone(),
-            'loss_jloc': zero.clone(),
-            'loss_joff': zero.clone(),
-            'loss_pos': zero.clone(),
-            'loss_neg': zero.clone(),
-            'loss_aux': zero.clone(),
-            'loss_line_df': zero.clone(),
-            'loss_line_af': zero.clone(),
-        }
+        loss_dict = {k: torch.tensor(0.0, device=device) for k in (
+            'loss_md', 'loss_dis', 'loss_res', 'loss_jloc', 'loss_joff',
+            'loss_pos', 'loss_neg', 'loss_aux', 'loss_line_df', 'loss_line_af',
+        )}
 
         extra_info = defaultdict(list)
 
@@ -702,18 +695,24 @@ class WireframeDetector(nn.Module):
         
         return lines_out, sc_[sc_>0]
 
+    def _get_cached_grids(self, height, width, device):
+        key = (height, width, device)
+        if key not in self._meshgrid_cache:
+            _y = torch.arange(0, height, device=device).float()
+            _x = torch.arange(0, width, device=device).float()
+            y0, x0 = torch.meshgrid(_y, _x, indexing='ij')
+            sign_pad = torch.arange(
+                -self.use_residual, self.use_residual + 1,
+                device=device, dtype=torch.float32
+            ).reshape(1, -1, 1, 1)
+            self._meshgrid_cache[key] = (y0[None, None], x0[None, None], sign_pad)
+        return self._meshgrid_cache[key]
+
     def hafm_decoding(self, md_maps, dis_maps, residual_maps, scale=5.0, flatten = True):
         device = md_maps.device
 
         batch_size, _, height, width = md_maps.shape
-        _y = torch.arange(0,height,device=device).float()
-        _x = torch.arange(0,width, device=device).float()
-
-        y0, x0 =torch.meshgrid(_y, _x,indexing='ij')
-        y0 = y0[None,None]
-        x0 = x0[None,None]
-        
-        sign_pad = torch.arange(-self.use_residual,self.use_residual+1,device=device,dtype=torch.float32).reshape(1,-1,1,1)
+        y0, x0, sign_pad = self._get_cached_grids(height, width, device)
 
         if residual_maps is not None:
             residual = residual_maps*sign_pad

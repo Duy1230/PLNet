@@ -17,7 +17,7 @@ import copy
 
 
 def add_shade(img, random_state=None, nb_ellipses=20,
-              amplitude=[-0.5, 0.5], kernel_size_interval=(250, 350)):
+              amplitude=[-0.5, 0.5], kernel_size_interval=(51, 101)):
     """ Overlay the image with several shades
     Parameters:
       nb_ellipses: number of shades
@@ -51,7 +51,7 @@ def add_shade(img, random_state=None, nb_ellipses=20,
 
 
 def add_fog(img, random_state=None, max_nb_ellipses=20,
-            transparency=0.6, kernel_size_interval=(150, 250)):
+            transparency=0.6, kernel_size_interval=(51, 101)):
     """ Overlay the image with several shades
     Parameters:
       max_nb_ellipses: number max of shades
@@ -180,12 +180,13 @@ def random_contrast(img, random_state=None, max_change=[0.5, 2.0]):
 
 
 class TrainDataset(Dataset):
-    def __init__(self, root, ann_file, transform = None, augmentation = 4):
+    def __init__(self, root, ann_file, transform = None, augmentation = 4, hafm_encoder=None):
         self.root = root
         with open(ann_file,'r') as _:
             self.annotations = json.load(_)
         self.transform = transform
         self.augmentation = augmentation
+        self.hafm_encoder = hafm_encoder
     
     def __getitem__(self, idx_):
         # print(idx_)
@@ -222,7 +223,7 @@ class TrainDataset(Dataset):
         image = image.astype(float)
 
         if len(image.shape) == 2:
-            image = np.concatenate([image[...,None],image[...,None],image[...,None]],axis=-1)
+            image = np.repeat(image[:, :, np.newaxis], 3, axis=2)
         else:
             image = image[:,:,:3]
 
@@ -281,9 +282,15 @@ class TrainDataset(Dataset):
 
 
         if self.transform is not None:
-            return self.transform(image,ann)
-        
-        
+            image, ann = self.transform(image,ann)
+
+        if self.hafm_encoder is not None:
+            target, meta = self.hafm_encoder._process_per_image(ann)
+            ann = {
+                "hafm_target": target,
+                "hafm_meta": meta,
+            }
+
         return image, ann
 
     def __len__(self):

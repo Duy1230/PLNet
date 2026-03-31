@@ -1,7 +1,6 @@
 import torch
 import torchvision
 from torchvision.transforms import functional as F
-from skimage.transform  import resize
 import cv2
 import numpy as np
 class Compose(object):
@@ -24,8 +23,12 @@ class Resize(object):
         self.ann_width    = ann_width
 
     def __call__(self, image, ann):
-        image = resize(image,(self.image_height,self.image_width))
-        image = np.array(image,dtype=np.float32)/255.0
+        image = cv2.resize(
+            image,
+            (self.image_width, self.image_height),
+            interpolation=cv2.INTER_LINEAR,
+        )
+        image = image.astype(np.float32) / 255.0
 
         sx = self.ann_width/ann['width']
         sy = self.ann_height/ann['height']

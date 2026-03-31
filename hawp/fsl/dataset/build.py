@@ -3,6 +3,7 @@ from .transforms import *
 from . import train_dataset
 from ..config.paths_catalog import DatasetCatalog
 from . import test_dataset
+from ..model.hafm import HAFMencoder
 
 
 def _uses_raw_superpoint_input(cfg):
@@ -37,6 +38,10 @@ def build_train_dataset(cfg):
     factory = getattr(train_dataset,dargs['factory'])
     args = dargs['args']
     args['augmentation'] = cfg.DATASETS.AUGMENTATION
+    if bool(getattr(cfg.DATALOADER, "PRECOMPUTE_HAFM", True)):
+        args['hafm_encoder'] = HAFMencoder(cfg)
+    else:
+        args['hafm_encoder'] = None
     args['transform'] = Compose(
                                 [Resize(cfg.DATASETS.IMAGE.HEIGHT,
                                         cfg.DATASETS.IMAGE.WIDTH,
@@ -57,12 +62,27 @@ def build_train_dataset(cfg):
 
 
     dataset = factory(**args)
-    
-    dataset = torch.utils.data.DataLoader(dataset,
-                                          batch_size=cfg.SOLVER.IMS_PER_BATCH,
-                                          collate_fn=train_dataset.collate_fn,
-                                          shuffle = True,
-                                          num_workers = cfg.DATALOADER.NUM_WORKERS)
+
+    num_workers = int(cfg.DATALOADER.NUM_WORKERS)
+    pin_memory = bool(getattr(cfg.DATALOADER, "PIN_MEMORY", True))
+    persistent_workers = bool(getattr(cfg.DATALOADER, "PERSISTENT_WORKERS", True))
+    prefetch_factor = int(getattr(cfg.DATALOADER, "PREFETCH_FACTOR", 2))
+
+    loader_kwargs = {
+        "batch_size": cfg.SOLVER.IMS_PER_BATCH,
+        "collate_fn": train_dataset.collate_fn,
+        "shuffle": True,
+        "num_workers": num_workers,
+        # Pinned memory enables faster async host-to-device copies.
+        "pin_memory": pin_memory,
+    }
+    if num_workers > 0 and persistent_workers:
+        # Keep workers alive across epochs and prefetch batches.
+        loader_kwargs["persistent_workers"] = True
+    if num_workers > 0 and prefetch_factor > 0:
+        loader_kwargs["prefetch_factor"] = prefetch_factor
+
+    dataset = torch.utils.data.DataLoader(dataset, **loader_kwargs)
     return dataset
 
 def build_test_dataset(cfg):
@@ -91,10 +111,21 @@ def build_test_dataset(cfg):
         args = dargs['args']
         args['transform'] = transforms
         dataset = factory(**args)
-        dataset = torch.utils.data.DataLoader(
-            dataset,  batch_size = 1,
-            collate_fn = dataset.collate_fn,
-            num_workers = cfg.DATALOADER.NUM_WORKERS,
-        )
+        num_workers = int(cfg.DATALOADER.NUM_WORKERS)
+        pin_memory = bool(getattr(cfg.DATALOADER, "PIN_MEMORY", True))
+        persistent_workers = bool(getattr(cfg.DATALOADER, "PERSISTENT_WORKERS", True))
+        prefetch_factor = int(getattr(cfg.DATALOADER, "PREFETCH_FACTOR", 2))
+        loader_kwargs = {
+            "batch_size": 1,
+            "collate_fn": dataset.collate_fn,
+            "num_workers": num_workers,
+            "pin_memory": pin_memory,
+        }
+        if num_workers > 0 and persistent_workers:
+            loader_kwargs["persistent_workers"] = True
+        if num_workers > 0 and prefetch_factor > 0:
+            loader_kwargs["prefetch_factor"] = prefetch_factor
+
+        dataset = torch.utils.data.DataLoader(dataset, **loader_kwargs)
         datasets.append((name,dataset))
     return datasets

@@ -212,8 +212,7 @@ def train(cfg, model, train_dataset, optimizer, scheduler, loss_reducer, checkpo
                         wdir = cfg.OUTPUT_DIR
                     )
                 )
-
-            writer.add_scalar("loss", loss_reduced, step)
+                writer.add_scalar("loss", loss_reduced, step)
 
         scheduler.step()
 
@@ -249,18 +248,59 @@ if __name__ == "__main__":
                         type=int)
     
     parser.add_argument('--tf32', default=False, action='store_true', help='toggle on the TF32 of pytorch')
-    parser.add_argument('--dtm', default=True, choices=[True, False], help='toggle the deterministic option of CUDNN. This option will affect the replication of experiments')
     parser.add_argument(
-        '--amp',
+        '--deterministic',
         default=False,
         action='store_true',
-        help='enable AMP mixed precision training',
+        help='enable deterministic cuDNN mode (slower, more reproducible)',
     )
+    parser.add_argument(
+        '--dtm',
+        default=None,
+        action='store_true',
+        help='deprecated alias of --deterministic',
+    )
+    amp_group = parser.add_mutually_exclusive_group()
+    amp_group.add_argument(
+        '--amp',
+        dest='amp',
+        action='store_true',
+        help='force enable AMP mixed precision training',
+    )
+    amp_group.add_argument(
+        '--no-amp',
+        dest='amp',
+        action='store_false',
+        help='force disable AMP mixed precision training',
+    )
+    parser.set_defaults(amp=None)
+    compile_group = parser.add_mutually_exclusive_group()
+    compile_group.add_argument(
+        '--compile',
+        dest='compile',
+        action='store_true',
+        help='force enable torch.compile (PyTorch 2.x)',
+    )
+    compile_group.add_argument(
+        '--no-compile',
+        dest='compile',
+        action='store_false',
+        help='force disable torch.compile',
+    )
+    parser.add_argument(
+        '--compile-mode',
+        default=None,
+        choices=['default', 'reduce-overhead', 'max-autotune'],
+        help='torch.compile optimization mode',
+    )
+    parser.set_defaults(compile=None)
 
     args = parser.parse_args()
     torch.backends.cudnn.allow_tf32 = args.tf32
     torch.backends.cuda.matmul.allow_tf32 = args.tf32
-    torch.backends.cudnn.deterministic = args.dtm
+    deterministic = bool(args.deterministic or args.dtm)
+    torch.backends.cudnn.deterministic = deterministic
+    torch.backends.cudnn.benchmark = not deterministic
 
     assert args.config.endswith('yaml') or args.config.endswith('yml')
     config_basename = os.path.basename(args.config)
@@ -299,6 +339,23 @@ if __name__ == "__main__":
 
     model = build_model(cfg)
 
+    compile_cfg = bool(getattr(cfg.MODEL.ENHANCEMENTS, "TORCH_COMPILE", False))
+    compile_enabled = compile_cfg if args.compile is None else bool(args.compile)
+    compile_mode = (
+        args.compile_mode
+        if args.compile_mode is not None
+        else str(getattr(cfg.MODEL.ENHANCEMENTS, "COMPILE_MODE", "default"))
+    )
+    if compile_enabled:
+        if hasattr(torch, "compile"):
+            try:
+                model = torch.compile(model, mode=compile_mode)
+                logger.info("torch.compile enabled with mode=%s", compile_mode)
+            except Exception as exc:
+                logger.warning("torch.compile failed, falling back to eager mode: %s", exc)
+        else:
+            logger.warning("torch.compile requested but unavailable in this PyTorch version.")
+
     optimizer = make_optimizer(cfg, model)
     scheduler = make_lr_scheduler(cfg, optimizer)
 
@@ -309,7 +366,7 @@ if __name__ == "__main__":
     max_epoch = cfg.SOLVER.MAX_EPOCH
     arguments["max_epoch"] = max_epoch
     config_amp = bool(getattr(cfg.MODEL.ENHANCEMENTS, "AMP", False))
-    arguments["use_amp"] = bool(args.amp or config_amp)
+    arguments["use_amp"] = config_amp if args.amp is None else bool(args.amp)
     if arguments["use_amp"] and (not torch.cuda.is_available() or not str(cfg.MODEL.DEVICE).startswith("cuda")):
         logger.warning("AMP requested but CUDA device is not active. Falling back to FP32.")
         arguments["use_amp"] = False
