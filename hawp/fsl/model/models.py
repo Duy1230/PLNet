@@ -118,6 +118,17 @@ class WireframeDetector(nn.Module):
         self.n_out_junc = cfg.MODEL.PARSING_HEAD.N_OUT_JUNC
         self.n_out_line = cfg.MODEL.PARSING_HEAD.N_OUT_LINE
         self.use_residual = int(cfg.MODEL.PARSING_HEAD.USE_RESIDUAL)
+        enhancements = getattr(cfg.MODEL, "ENHANCEMENTS", None)
+        self.early_proposal_topk = (
+            int(getattr(enhancements, "EARLY_PROPOSAL_TOPK", 0))
+            if enhancements is not None
+            else 0
+        )
+        self.early_proposal_length_weight = (
+            float(getattr(enhancements, "EARLY_PROPOSAL_LENGTH_WEIGHT", 0.05))
+            if enhancements is not None
+            else 0.05
+        )
 
         self.register_buffer('tspan', torch.linspace(0, 1, self.n_pts0)[None,None,:].cuda())
         self._meshgrid_cache = {}
@@ -330,12 +341,38 @@ class WireframeDetector(nn.Module):
 
         topK = min(self.topk_junctions, int((jloc_pred_nms>self.jhm_threshold).float().sum().item()))
         
-        juncs_pred, _ = get_junctions(non_maximum_suppression(jloc_pred[0]),joff_pred[0], topk=topK,th=self.jhm_threshold)
+        juncs_pred, junc_scores = get_junctions(
+            non_maximum_suppression(jloc_pred[0]),
+            joff_pred[0],
+            topk=topK,
+            th=self.jhm_threshold,
+        )
 
         extra_info['time_proposal'] = time.time() - extra_info['time_proposal']
         extra_info['time_matching'] = time.time()
 
         lines_adjusted, lines_init, perm, unique_indices = self.wireframe_matcher(juncs_pred, lines_pred,return_index=True)
+        num_proposals_before = int(lines_adjusted.size(0))
+        if (
+            self.early_proposal_topk > 0
+            and lines_adjusted.size(0) > self.early_proposal_topk
+            and unique_indices.numel() > 0
+        ):
+            pair_scores = 0.5 * (
+                junc_scores[unique_indices[:, 0]] + junc_scores[unique_indices[:, 1]]
+            )
+            lengths = torch.linalg.norm(
+                lines_adjusted[:, :2] - lines_adjusted[:, 2:], ord=2, dim=1
+            )
+            lengths = lengths / lengths.max().clamp_min(1e-6)
+            quick_scores = pair_scores + self.early_proposal_length_weight * lengths
+            keep_idx = torch.topk(
+                quick_scores, k=self.early_proposal_topk, largest=True
+            ).indices
+            lines_adjusted = lines_adjusted[keep_idx]
+            lines_init = lines_init[keep_idx]
+            unique_indices = unique_indices[keep_idx]
+        num_proposals_after = int(lines_adjusted.size(0))
         extra_info['time_matching'] = time.time() - extra_info['time_matching']
         extra_info['time_verification'] = time.time()
 
@@ -365,7 +402,7 @@ class WireframeDetector(nn.Module):
 
         # unique_indices = unique_indices.unique()
         juncs_final = juncs_pred
-        juncs_score = _
+        juncs_score = junc_scores
         # juncs_score = _#[idx_lines_for_junctions.unique()]
 
         extra_info['time_verification'] = time.time() - extra_info['time_verification']
@@ -387,6 +424,8 @@ class WireframeDetector(nn.Module):
             'juncs_pred': juncs_final,
             'juncs_score': juncs_score,
             'num_proposals': lines_adjusted.size(0),
+            'num_proposals_before_prune': num_proposals_before,
+            'num_proposals_after_prune': num_proposals_after,
             'filename': annotations[0]['filename'],
             'width': annotations[0]['width'],
             'height': annotations[0]['height'],

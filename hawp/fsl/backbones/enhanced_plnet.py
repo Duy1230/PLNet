@@ -4,7 +4,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .modules import BiFPN, DeformableUNet, LineAttractionFieldHead, PointLineCrossAttention
+from .modules import (
+    BiFPN,
+    DeformableCrossAttention,
+    DeformableUNet,
+    LineAttractionFieldHead,
+    PointLineCrossAttention,
+)
 
 
 def _cfg_get(node, key, default):
@@ -104,6 +110,21 @@ class EnhancedPLNet(nn.Module):
         self.cross_attn_spatial_reduction = int(
             _cfg_get(enhancements, "CROSS_ATTN_SPATIAL_REDUCTION", 1)
         )
+        self.cross_attn_impl = str(
+            _cfg_get(enhancements, "CROSS_ATTN_IMPL", "mha")
+        ).lower()
+        self.cross_attn_reduction_impl = str(
+            _cfg_get(enhancements, "CROSS_ATTN_REDUCTION_IMPL", "avgpool")
+        ).lower()
+        self.cross_attn_force_flash = bool(
+            _cfg_get(enhancements, "CROSS_ATTN_FORCE_FLASH", False)
+        )
+        self.use_deformable_attention = bool(
+            _cfg_get(enhancements, "USE_DEFORMABLE_ATTENTION", False)
+        )
+        self.deform_attn_heads = int(_cfg_get(enhancements, "DEFORM_ATTN_HEADS", 8))
+        self.deform_attn_points = int(_cfg_get(enhancements, "DEFORM_ATTN_POINTS", 4))
+        self.deform_attn_levels = int(_cfg_get(enhancements, "DEFORM_ATTN_LEVELS", 3))
 
         self.use_line_field = bool(_cfg_get(enhancements, "USE_LINE_FIELD", False))
         self.line_field_hidden = int(_cfg_get(enhancements, "LINE_FIELD_HIDDEN", 128))
@@ -169,19 +190,41 @@ class EnhancedPLNet(nn.Module):
         self.fc2 = nn.Conv2d(128, 256, kernel_size=1)
         self.score2 = head(256, 9)
 
-        if self.use_cross_attention:
-            if self.cross_attn_dim % self.cross_attn_heads != 0:
+        if self.use_cross_attention and self.use_deformable_attention:
+            raise ValueError(
+                "USE_CROSS_ATTENTION and USE_DEFORMABLE_ATTENTION cannot both be true."
+            )
+
+        if self.use_cross_attention or self.use_deformable_attention:
+            attn_heads = (
+                self.deform_attn_heads
+                if self.use_deformable_attention
+                else self.cross_attn_heads
+            )
+            if self.cross_attn_dim % attn_heads != 0:
                 raise ValueError(
-                    "CROSS_ATTN_DIM must be divisible by CROSS_ATTN_HEADS."
+                    "Attention dimension must be divisible by attention heads."
                 )
             self.point_proj = nn.Conv2d(256, self.cross_attn_dim, kernel_size=1)
             self.line_proj = nn.Conv2d(256, self.cross_attn_dim, kernel_size=1)
-            self.cross_attention = PointLineCrossAttention(
-                embed_dim=self.cross_attn_dim,
-                num_heads=self.cross_attn_heads,
-                dropout=self.cross_attn_dropout,
-                spatial_reduction=self.cross_attn_spatial_reduction,
-            )
+            if self.use_deformable_attention:
+                self.cross_attention = DeformableCrossAttention(
+                    embed_dim=self.cross_attn_dim,
+                    num_heads=self.deform_attn_heads,
+                    num_levels=self.deform_attn_levels,
+                    num_points=self.deform_attn_points,
+                    dropout=self.cross_attn_dropout,
+                )
+            else:
+                self.cross_attention = PointLineCrossAttention(
+                    embed_dim=self.cross_attn_dim,
+                    num_heads=self.cross_attn_heads,
+                    dropout=self.cross_attn_dropout,
+                    spatial_reduction=self.cross_attn_spatial_reduction,
+                    attention_impl=self.cross_attn_impl,
+                    reduction_impl=self.cross_attn_reduction_impl,
+                    force_flash=self.cross_attn_force_flash,
+                )
             self.cross_attn_gate = nn.Parameter(torch.zeros(1))
             if self.cross_attn_dim == 256:
                 self.line_back_proj = nn.Identity()
@@ -238,7 +281,7 @@ class EnhancedPLNet(nn.Module):
         x_stack2 = self.stack2(x_stack1)
         x_stack2_proj = self.fc2(x_stack2)
 
-        if self.use_cross_attention:
+        if self.cross_attention is not None:
             point_tokens = self.point_proj(shared_features)
             if point_tokens.shape[-2:] != x_stack2_proj.shape[-2:]:
                 point_tokens = F.interpolate(
