@@ -57,6 +57,7 @@ class DeformableCrossAttention(nn.Module):
             bias=False,
         )
 
+        num_groups = min(32, self.embed_dim)
         self.point_downsample_convs = nn.ModuleList()
         self.point_downsample_norms = nn.ModuleList()
         self.line_downsample_convs = nn.ModuleList()
@@ -72,7 +73,7 @@ class DeformableCrossAttention(nn.Module):
                     bias=False,
                 )
             )
-            self.point_downsample_norms.append(nn.LayerNorm(self.embed_dim))
+            self.point_downsample_norms.append(nn.GroupNorm(num_groups, self.embed_dim))
 
             self.line_downsample_convs.append(
                 nn.Conv2d(
@@ -84,7 +85,7 @@ class DeformableCrossAttention(nn.Module):
                     bias=False,
                 )
             )
-            self.line_downsample_norms.append(nn.LayerNorm(self.embed_dim))
+            self.line_downsample_norms.append(nn.GroupNorm(num_groups, self.embed_dim))
 
         self.point_level_embed = nn.Parameter(torch.zeros(self.num_levels, self.embed_dim))
         self.line_level_embed = nn.Parameter(torch.zeros(self.num_levels, self.embed_dim))
@@ -123,12 +124,6 @@ class DeformableCrossAttention(nn.Module):
         bsz, _, channels = seq.shape
         return seq.transpose(1, 2).reshape(bsz, channels, height, width)
 
-    def _apply_level_norm(self, feat, norm):
-        bsz, channels, height, width = feat.shape
-        seq = feat.flatten(2).transpose(1, 2)
-        seq = norm(seq)
-        return seq.transpose(1, 2).reshape(bsz, channels, height, width)
-
     def _build_multiscale_levels(
         self,
         feat,
@@ -136,12 +131,11 @@ class DeformableCrossAttention(nn.Module):
         downsample_norms,
         level_embed,
     ):
-        levels = []
+        levels = [feat + level_embed[0].view(1, -1, 1, 1)]
         current = feat
-        for level_idx in range(self.num_levels):
-            if level_idx > 0:
-                current = downsample_convs[level_idx - 1](current)
-                current = self._apply_level_norm(current, downsample_norms[level_idx - 1])
+        for level_idx in range(1, self.num_levels):
+            current = downsample_convs[level_idx - 1](current)
+            current = downsample_norms[level_idx - 1](current)
             levels.append(current + level_embed[level_idx].view(1, -1, 1, 1))
         return levels
 
