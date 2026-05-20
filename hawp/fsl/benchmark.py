@@ -51,6 +51,112 @@ def plot_pr_curve(P, R, F, path):
     plt.title(sAP_string)
     plt.savefig(path)
 
+JUNCTION_THRESHOLDS = [0.5, 1.0, 2.0]
+
+
+def junc_TPFP(juncs_pred, juncs_gt, threshold):
+    """Greedy junction matching: TP if predicted junction is within `threshold`
+    pixels of an unmatched GT junction (Euclidean distance, squared internally)."""
+    if len(juncs_pred) == 0:
+        return np.zeros(0, dtype=np.float64), np.zeros(0, dtype=np.float64)
+    if len(juncs_gt) == 0:
+        return np.zeros(len(juncs_pred), dtype=np.float64), np.ones(len(juncs_pred), dtype=np.float64)
+
+    diff = np.sum((juncs_pred[:, None, :] - juncs_gt[None, :, :]) ** 2, axis=-1)
+    choice = np.argmin(diff, axis=1)
+    dist = np.min(diff, axis=1)
+
+    hit = np.zeros(len(juncs_gt), dtype=np.bool_)
+    tp = np.zeros(len(juncs_pred), dtype=np.float64)
+    fp = np.zeros(len(juncs_pred), dtype=np.float64)
+    thresh_sq = threshold ** 2
+
+    for i in range(len(juncs_pred)):
+        if dist[i] < thresh_sq and not hit[choice[i]]:
+            hit[choice[i]] = True
+            tp[i] = 1
+        else:
+            fp[i] = 1
+    return tp, fp
+
+
+def jAPEval(result_list, annotations_dict, threshold):
+    """Junction Average Precision at a pixel threshold (in 128x128 space).
+
+    Returns (jAP, precision, recall, F1, mean_loc_error).
+    """
+    tp_list, fp_list, scores_list = [], [], []
+    n_gt = 0
+    loc_errors = []
+
+    for res in result_list:
+        filename = res['filename']
+        gt = annotations_dict[filename]
+
+        juncs_pred = np.array(res.get('juncs_pred', []), dtype=np.float32)
+        scores = np.array(res.get('juncs_score', []), dtype=np.float32)
+        juncs_gt = np.array(gt.get('junc', []), dtype=np.float32)
+
+        if juncs_pred.ndim == 1 and juncs_pred.size > 0:
+            juncs_pred = juncs_pred.reshape(-1, 2)
+        if juncs_gt.ndim == 1 and juncs_gt.size > 0:
+            juncs_gt = juncs_gt.reshape(-1, 2)
+        if juncs_pred.size == 0:
+            juncs_pred = np.zeros((0, 2), dtype=np.float32)
+        if juncs_gt.size == 0:
+            juncs_gt = np.zeros((0, 2), dtype=np.float32)
+
+        assert gt['width'] == res['width'] and gt['height'] == res['height']
+
+        sx = 128.0 / float(res['width'])
+        sy = 128.0 / float(res['height'])
+        if juncs_pred.shape[0] > 0:
+            juncs_pred[:, 0] *= sx
+            juncs_pred[:, 1] *= sy
+        if juncs_gt.shape[0] > 0:
+            juncs_gt[:, 0] *= sx
+            juncs_gt[:, 1] *= sy
+
+        sort_idx = np.argsort(-scores)
+        juncs_pred = juncs_pred[sort_idx]
+        scores = scores[sort_idx]
+
+        tp, fp = junc_TPFP(juncs_pred, juncs_gt, threshold)
+        n_gt += juncs_gt.shape[0]
+        tp_list.append(tp)
+        fp_list.append(fp)
+        scores_list.append(scores)
+
+        if juncs_pred.shape[0] > 0 and juncs_gt.shape[0] > 0:
+            diff = np.sum((juncs_pred[:, None, :] - juncs_gt[None, :, :]) ** 2, axis=-1)
+            matched_dist = np.sqrt(np.min(diff, axis=1))
+            thresh_mask = matched_dist < threshold
+            if thresh_mask.any():
+                loc_errors.extend(matched_dist[thresh_mask].tolist())
+
+    if n_gt == 0:
+        return 0.0, 0.0, 0.0, 0.0, 0.0
+
+    tp_list = np.concatenate(tp_list)
+    fp_list = np.concatenate(fp_list)
+    scores_list = np.concatenate(scores_list)
+    idx = np.argsort(scores_list)[::-1]
+    tp = np.cumsum(tp_list[idx]) / n_gt
+    fp = np.cumsum(fp_list[idx]) / n_gt
+    rcs = tp
+    pcs = tp / np.maximum(tp + fp, 1e-9)
+    F_list = 2 * rcs * pcs / (rcs + pcs + 1e-9)
+    F_list = np.nan_to_num(F_list, 0)
+    F = float(F_list.max())
+    P = float(pcs[F_list.argmax()])
+    R = float(rcs[F_list.argmax()])
+
+    jAP = float(AP(tp, fp))
+    mle = float(np.mean(loc_errors)) if loc_errors else 0.0
+
+    return jAP, P, R, F, mle
+
+
 def sAPEval(result_list, annotations_dict, threshold):
     tp_list, fp_list, scores_list = [],[],[]
     n_gt = 0
