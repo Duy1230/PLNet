@@ -55,7 +55,7 @@ sudo docker build - < Dockerfile --tag plnet:latest
 Run the following command line to train the PLNet on the Wireframe dataset.
 
 ```
-python -m hawp.fsl.train configs/plnet.yaml --logdir outputs
+python -m hawp.fsl.train configs/enhanced_plnet_deformable.yaml --logdir outputs
 ```
 
 ## Evaluation

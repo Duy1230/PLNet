@@ -11,3 +11,4 @@ pycolmap
 seaborn
 kornia
 easydict
+tensorboard

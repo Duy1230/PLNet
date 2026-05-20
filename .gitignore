@@ -1,11 +1,21 @@
 outputs/*
+output/
 **/*.DS_Store
 parsing/data/wireframe/images/*
 .vscode/*
+.cursor/
+.external/
 data/*
 data
 
 **/*.pyc
 **/*.so
+__pycache__/
 data-ssl/**/*
 exp-ssl/**/*
+
+note/
+material/
+AGENTS.md
+GEMINI.md
+*.onnx
